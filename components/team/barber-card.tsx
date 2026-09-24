@@ -56,7 +56,7 @@ export function BarberCard({
           </span>
           <span className="inline-flex items-center gap-1.5">
             <Award className="size-3.5 text-primary" aria-hidden />
-            {barber.yearsExperience} anos de experiência
+            {barber.yearsExperience} {barber.yearsExperience === 1 ? "ano" : "anos"} de experiência
           </span>
         </div>
 

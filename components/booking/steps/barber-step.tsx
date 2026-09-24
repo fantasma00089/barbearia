@@ -50,7 +50,7 @@ export function BarberStep({
                 <span className="mt-0.5 block truncate text-xs text-muted-foreground">{b.specialty}</span>
                 <span className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
                   <Star className="size-3 fill-primary text-primary" aria-hidden />
-                  {b.rating.toFixed(1).replace(".", ",")} · {b.yearsExperience} anos
+                  {b.rating.toFixed(1).replace(".", ",")} · {b.yearsExperience} {b.yearsExperience === 1 ? "ano" : "anos"} de experiência
                 </span>
               </span>
             </div>
