@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" role="img" aria-label="Imagem ilustrativa de corte">
+  <defs>
+    <radialGradient id="glow-corte06" cx="50%" cy="38%" r="65%">
+      <stop offset="0" stop-color="#d9a441" stop-opacity="0.35"/>
+      <stop offset="0.55" stop-color="#d9a441" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#0a0a0a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bg-corte06" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1a1a"/>
+      <stop offset="1" stop-color="#0b0b0b"/>
+    </linearGradient>
+    <linearGradient id="rim-corte06" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ecd29a"/>
+      <stop offset="0.6" stop-color="#d9a441"/>
+      <stop offset="1" stop-color="#d9a441" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="skin-corte06" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2b2b2b"/>
+      <stop offset="0.5" stop-color="#232323"/>
+      <stop offset="1" stop-color="#191919"/>
+    </linearGradient>
+    <pattern id="lines-corte06" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#ffffff" stroke-opacity="0.025"/>
+    </pattern>
+  </defs>
+  <rect width="600" height="800" fill="url(#bg-corte06)"/>
+  <rect width="600" height="800" fill="url(#lines-corte06)"/>
+  <circle cx="300" cy="336" r="216" fill="none" stroke="#d9a441" stroke-opacity="0.18"/><circle cx="300" cy="336" r="252" fill="none" stroke="#d9a441" stroke-opacity="0.08"/>
+  <rect width="600" height="800" fill="url(#glow-corte06)"/>
+  <g transform="translate(30 120) scale(1.35)">
+    <path d="M40 520 C52 404 124 372 200 368 C276 372 348 404 360 520 Z" fill="#161616" stroke="url(#rim-corte06)" stroke-width="2"/>
+    <path d="M150 382 L200 440 L250 382" fill="none" stroke="#d9a441" stroke-opacity="0.35" stroke-width="2"/>
+    <path d="M172 296 L228 296 L234 372 C214 384 186 384 166 372 Z" fill="url(#skin-corte06)"/>
+    <ellipse cx="200" cy="232" rx="68" ry="86" fill="url(#skin-corte06)" stroke="url(#rim-corte06)" stroke-width="2"/>
+    <ellipse cx="131" cy="240" rx="9" ry="16" fill="#222"/>
+    <ellipse cx="269" cy="240" rx="9" ry="16" fill="#222"/>
+    <g fill="#141414" stroke="url(#rim-corte06)" stroke-width="1.6">
+            <circle cx="150" cy="180" r="24"/><circle cx="178" cy="156" r="26"/><circle cx="212" cy="150" r="27"/>
+            <circle cx="244" cy="164" r="25"/><circle cx="262" cy="192" r="20"/><circle cx="138" cy="206" r="16"/>
+          </g>
+  </g>
+  <text x="580" y="30" text-anchor="end" font-family="Arial, sans-serif" font-size="11" letter-spacing="3" fill="#ffffff" fill-opacity="0.3">IMAGEM ILUSTRATIVA</text>
+</svg>

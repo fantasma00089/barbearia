@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * ───────────────────────────────────────────────────────────────
+ *  TOKENS DE MARCA
+ *  Troque as cores da barbearia alterando somente estes valores (HSL).
+ *  `.dark` é o tema padrão; `:root` é o tema claro opcional.
+ * ───────────────────────────────────────────────────────────────
+ */
+@layer base {
+  :root {
+    --background: 40 33% 97%;
+    --foreground: 0 0% 9%;
+    --card: 40 30% 99%;
+    --card-foreground: 0 0% 9%;
+    --popover: 40 30% 99%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 34 78% 33%;
+    --primary-foreground: 40 33% 98%;
+    --secondary: 36 18% 90%;
+    --secondary-foreground: 0 0% 12%;
+    --muted: 36 18% 92%;
+    --muted-foreground: 20 6% 34%;
+    --accent: 36 20% 88%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 6 68% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 30 12% 84%;
+    --input: 30 12% 80%;
+    --ring: 34 78% 38%;
+    --gold: 34 78% 36%;
+    --gold-soft: 38 70% 46%;
+    --ember: 8 62% 40%;
+    --success: 145 55% 30%;
+    --radius: 0.75rem;
+
+    /* Tipografia (fontes locais via @fontsource — sem requisições externas) */
+    --font-display: "Oswald Variable", "Oswald", "Arial Narrow", sans-serif;
+    --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-serif: "Playfair Display Variable", "Playfair Display", Georgia, serif;
+  }
+
+  .dark {
+    --background: 0 0% 4%;
+    --foreground: 40 20% 94%;
+    --card: 0 0% 7%;
+    --card-foreground: 40 20% 94%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 40 20% 94%;
+    --primary: 38 74% 56%;
+    --primary-foreground: 0 0% 6%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 40 20% 94%;
+    --muted: 0 0% 11%;
+    --muted-foreground: 30 8% 64%;
+    --accent: 0 0% 14%;
+    --accent-foreground: 40 20% 94%;
+    --destructive: 6 66% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 16%;
+    --input: 0 0% 20%;
+    --ring: 38 74% 56%;
+    --gold: 38 74% 56%;
+    --gold-soft: 40 60% 70%;
+    --ember: 8 62% 44%;
+    --success: 145 50% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-padding-top: 5rem;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  /* Foco sempre visível para navegação por teclado */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto !important;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Rótulo pequeno acima dos títulos de seção */
+  .eyebrow {
+    @apply inline-flex items-center gap-3 font-sans text-xs font-semibold uppercase tracking-widest text-primary;
+  }
+  .eyebrow::before {
+    content: "";
+    @apply h-px w-8 bg-primary/70;
+  }
+
+  /* Underline animado dos links de navegação (anima apenas transform) */
+  .nav-link {
+    @apply relative inline-flex items-center py-2 text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground;
+  }
+  .nav-link::after {
+    content: "";
+    @apply absolute inset-x-0 bottom-1 h-px origin-left scale-x-0 bg-primary transition-transform duration-300 ease-out;
+  }
+  .nav-link:hover::after,
+  .nav-link[aria-current="page"]::after {
+    @apply scale-x-100;
+  }
+  .nav-link[aria-current="page"] {
+    @apply text-foreground;
+  }
+
+  /* Card interativo: elevação sutil + borda dourada */
+  .card-interactive {
+    @apply relative rounded-xl border bg-card transition-[transform,box-shadow,border-color] duration-300 ease-out;
+  }
+  @media (hover: hover) {
+    .card-interactive:hover {
+      @apply -translate-y-1 border-primary/60 shadow-[0_18px_40px_-20px_hsl(var(--gold)/0.45)];
+    }
+  }
+  .card-interactive:focus-within {
+    @apply border-primary/60;
+  }
+
+  /* Zoom muito leve em imagens dentro de cards */
+  .img-zoom {
+    @apply transition-transform duration-500 ease-out will-change-transform;
+  }
+  @media (hover: hover) {
+    .group:hover .img-zoom {
+      transform: scale(1.04);
+    }
+  }
+
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(100deg, hsl(var(--gold-soft)), hsl(var(--gold)) 45%, hsl(var(--gold-soft)));
+  }
+
+  .bg-grain {
+    background-image: radial-gradient(hsl(var(--foreground) / 0.035) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
+
+  .divider-gold {
+    @apply h-px w-full;
+    background: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.5), transparent);
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}

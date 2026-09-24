@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="Retrato ilustrativo">
+  <defs>
+    <radialGradient id="glow-rm" cx="50%" cy="38%" r="65%">
+      <stop offset="0" stop-color="#d9a441" stop-opacity="0.35"/>
+      <stop offset="0.55" stop-color="#d9a441" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#0a0a0a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bg-rm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1a1a"/>
+      <stop offset="1" stop-color="#0b0b0b"/>
+    </linearGradient>
+    <linearGradient id="rim-rm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ecd29a"/>
+      <stop offset="0.6" stop-color="#d9a441"/>
+      <stop offset="1" stop-color="#d9a441" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="skin-rm" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2b2b2b"/>
+      <stop offset="0.5" stop-color="#232323"/>
+      <stop offset="1" stop-color="#191919"/>
+    </linearGradient>
+    <pattern id="lines-rm" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#ffffff" stroke-opacity="0.025"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="500" fill="url(#bg-rm)"/>
+  <rect width="400" height="500" fill="url(#lines-rm)"/>
+  <rect width="400" height="500" fill="url(#glow-rm)"/>
+  <text x="200" y="120" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="150" fill="#d9a441" fill-opacity="0.07">RM</text>
+  <g transform="translate(0 10) scale(1)">
+    <path d="M40 520 C52 404 124 372 200 368 C276 372 348 404 360 520 Z" fill="#161616" stroke="url(#rim-rm)" stroke-width="2"/>
+    <path d="M150 382 L200 440 L250 382" fill="none" stroke="#d9a441" stroke-opacity="0.35" stroke-width="2"/>
+    <path d="M172 296 L228 296 L234 372 C214 384 186 384 166 372 Z" fill="url(#skin-rm)"/>
+    <ellipse cx="200" cy="232" rx="68" ry="86" fill="url(#skin-rm)" stroke="url(#rim-rm)" stroke-width="2"/>
+    <ellipse cx="131" cy="240" rx="9" ry="16" fill="#222"/>
+    <ellipse cx="269" cy="240" rx="9" ry="16" fill="#222"/>
+    <path d="M134 214 C128 150 168 118 205 120 C247 122 274 156 268 214 C258 186 246 170 202 168 C160 168 142 186 134 214 Z" fill="#141414" stroke="url(#rim-rm)" stroke-width="2"/>
+         <path d="M134 214 C136 232 138 244 140 256" stroke="#3a3a3a" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+         <path d="M266 214 C264 232 262 244 260 256" stroke="#3a3a3a" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+    <path d="M142 258 C150 306 178 326 200 328 C222 326 250 306 258 258" fill="none" stroke="#3a3a3a" stroke-width="10" stroke-dasharray="1 4" opacity="0.8"/>
+  </g>
+  <text x="20" y="30" font-family="Arial, sans-serif" font-size="10" letter-spacing="3" fill="#ffffff" fill-opacity="0.35">FOTO ILUSTRATIVA</text>
+</svg>
