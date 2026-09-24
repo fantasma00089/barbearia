@@ -62,6 +62,23 @@ model Barber {
   services BarberService[]
   bookings Booking[]
   blocks   TimeBlock[]
+  hours    BarberHour[]
+}
+
+/// Horário próprio do barbeiro em um dia da semana.
+/// Sem registro para o dia = segue o horário da barbearia (BusinessHour).
+model BarberHour {
+  barberId   String
+  dayOfWeek  Int
+  isOpen     Boolean @default(true)
+  openTime   String  @default("09:00")
+  closeTime  String  @default("20:00")
+  breakStart String?
+  breakEnd   String?
+
+  barber Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  @@id([barberId, dayOfWeek])
 }
 
 model BarberService {
@@ -171,4 +188,23 @@ model Payment {
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
+}
+
+/// Configurações editáveis pelo painel (chave → JSON).
+/// Chaves: "site" (identidade, contato, regras, textos) e "security" (senha do admin).
+/// Valores ausentes usam os padrões de config/*.ts.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+/// Imagens enviadas pelo painel (fotos de barbeiros, galeria, logo).
+/// Guardadas no banco para funcionar igual em VPS e em hospedagem serverless.
+model Media {
+  id        String   @id @default(cuid())
+  mimeType  String
+  size      Int
+  data      Bytes
+  createdAt DateTime @default(now())
 }

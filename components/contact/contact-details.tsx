@@ -1,30 +1,41 @@
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { InstagramIcon, WhatsAppIcon } from "@/components/icons/brand-icons";
-import { fullAddress, siteConfig } from "@/config/site";
 import { whatsappLink } from "@/lib/format";
 import type { HoursGroup } from "@/lib/hours";
+import { fullAddress, instagramUrl, phoneE164, whatsappDisplay } from "@/lib/site";
+import type { SiteSettings } from "@/types/settings";
 
-export function ContactDetails({ hours, showHours = true }: { hours: HoursGroup[]; showHours?: boolean }) {
-  const { contact, address } = siteConfig;
-  const rows = [
-    { icon: MapPin, label: "Endereço", value: fullAddress, hint: address.reference },
-    { icon: Phone, label: "Telefone", value: contact.phoneDisplay, href: `tel:${contact.phoneE164}` },
+export function ContactDetails({
+  settings,
+  hours,
+  showHours = true,
+}: {
+  settings: SiteSettings;
+  hours: HoursGroup[];
+  showHours?: boolean;
+}) {
+  const { contact, address } = settings;
+  const allRows = [
+    { icon: MapPin, label: "Endereço", value: fullAddress(settings), hint: address.reference },
+    { icon: Phone, label: "Telefone", value: contact.phoneDisplay, href: `tel:${phoneE164(settings)}` },
     {
       icon: WhatsAppIcon,
       label: "WhatsApp",
-      value: contact.whatsappDisplay,
-      href: whatsappLink(`Olá! Vim pelo site da ${siteConfig.shortName}.`),
+      value: whatsappDisplay(settings),
+      href: whatsappLink(contact.whatsapp, `Olá! Vim pelo site da ${settings.brand.shortName}.`),
       external: true,
     },
     {
       icon: InstagramIcon,
       label: "Instagram",
       value: `@${contact.instagramHandle}`,
-      href: contact.instagramUrl,
+      href: instagramUrl(settings),
       external: true,
     },
     { icon: Mail, label: "E-mail", value: contact.email, href: `mailto:${contact.email}` },
   ];
+
+  const rows = allRows.filter((r) => r.label !== "Instagram" || contact.instagramHandle);
 
   return (
     <address className="not-italic">

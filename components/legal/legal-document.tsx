@@ -1,6 +1,5 @@
 import { AlertTriangle } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
-import { siteConfig } from "@/config/site";
 import { formatDateStr } from "@/lib/time";
 
 export interface LegalSection {
@@ -9,13 +8,23 @@ export interface LegalSection {
   content: React.ReactNode;
 }
 
-export function LegalDocument({ title, intro, sections }: { title: string; intro: string; sections: LegalSection[] }) {
-  const updated = formatDateStr(siteConfig.legal.lastUpdated, { day: "numeric", month: "long", year: "numeric" });
+export function LegalDocument({
+  title,
+  intro,
+  sections,
+  lastUpdated,
+}: {
+  title: string;
+  intro: string;
+  sections: LegalSection[];
+  lastUpdated: string;
+}) {
+  const updated = formatDateStr(lastUpdated, { day: "numeric", month: "long", year: "numeric" });
   return (
     <>
       <PageHeader eyebrow="Documento legal" title={title} description={intro}>
         <p className="mt-5 text-sm text-muted-foreground">
-          Última atualização: <time dateTime={siteConfig.legal.lastUpdated}>{updated}</time>
+          Última atualização: <time dateTime={lastUpdated}>{updated}</time>
         </p>
       </PageHeader>
       <div className="container grid gap-10 py-10 md:py-14 lg:grid-cols-[240px_minmax(0,1fr)]">

@@ -18,7 +18,8 @@
     "db:reset": "prisma migrate reset --force",
     "db:studio": "prisma studio",
     "placeholders": "node scripts/generate-placeholders.mjs",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "admin:reset-password": "node scripts/reset-admin-password.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

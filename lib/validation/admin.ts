@@ -32,7 +32,7 @@ export const timeBlockSchema = z
     path: ["endTime"],
   });
 
-const hourRowSchema = z
+export const hourRowSchema = z
   .object({
     dayOfWeek: z.number().int().min(0).max(6),
     isOpen: z.boolean(),

@@ -5,6 +5,7 @@ import { prisma, type Db } from "./db";
 import { getAvailableSlots } from "./availability";
 import { AppError } from "./errors";
 import { withLock } from "./lock";
+import { getSettings } from "./settings";
 import { businessConfig } from "@/config/business";
 import { ANY_BARBER } from "@/lib/constants";
 import { addDays, formatDateLong, formatDateStr, todayStr, toTimeStr, zonedToUtc } from "@/lib/time";
@@ -38,16 +39,16 @@ export function normalizeCode(input: string) {
   return `${prefix}-${body}`;
 }
 
-function cancelDeadline(b: Pick<Booking, "startAt">) {
-  return new Date(b.startAt.getTime() - businessConfig.cancellation.minHoursBefore * 3600_000);
+function cancelDeadline(b: Pick<Booking, "startAt">, cancelMinHours: number) {
+  return new Date(b.startAt.getTime() - cancelMinHours * 3600_000);
 }
 
 function isActive(status: string) {
   return (ACTIVE_BOOKING_STATUSES as string[]).includes(status);
 }
 
-export function toPublicDTO(b: BookingWithRelations, now = new Date()): BookingPublicDTO {
-  const deadline = cancelDeadline(b);
+export function toPublicDTO(b: BookingWithRelations, cancelMinHours: number, now = new Date()): BookingPublicDTO {
+  const deadline = cancelDeadline(b, cancelMinHours);
   const active = isActive(b.status);
   const future = b.startAt.getTime() > now.getTime();
   return {
@@ -72,9 +73,9 @@ export function toPublicDTO(b: BookingWithRelations, now = new Date()): BookingP
   };
 }
 
-export function toAdminDTO(b: BookingWithRelations, now = new Date()): AdminBookingDTO {
+export function toAdminDTO(b: BookingWithRelations, cancelMinHours: number, now = new Date()): AdminBookingDTO {
   return {
-    ...toPublicDTO(b, now),
+    ...toPublicDTO(b, cancelMinHours, now),
     id: b.id,
     barberId: b.barberId,
     serviceId: b.serviceId,
@@ -104,13 +105,14 @@ type CreateInput = z.output<typeof createBookingSchema>;
 export async function createBooking(input: CreateInput, now = new Date()) {
   const barberId = input.barberId === ANY_BARBER ? null : input.barberId;
   const startAt = zonedToUtc(input.date, input.time);
+  const { booking: rules } = await getSettings();
 
   return withLock("booking:create", async () => {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         return await prisma.$transaction(
           async (tx) => {
-            const availability = await getAvailableSlots(input.serviceId, barberId, input.date, { db: tx, now });
+            const availability = await getAvailableSlots(input.serviceId, barberId, input.date, { db: tx, now, rules });
             const slot = availability.slots.find((s) => s.time === input.time);
             if (!slot || slot.startAt !== startAt.toISOString()) {
               throw new AppError(
@@ -125,7 +127,7 @@ export async function createBooking(input: CreateInput, now = new Date()) {
             let code = generateCode();
             while (await tx.booking.findUnique({ where: { code }, select: { id: true } })) code = generateCode();
 
-            const autoConfirm = businessConfig.booking.autoConfirm;
+            const autoConfirm = rules.autoConfirm;
             const created = await tx.booking.create({
               data: {
                 code,
@@ -144,7 +146,7 @@ export async function createBooking(input: CreateInput, now = new Date()) {
               },
               include: withRelations,
             });
-            return toPublicDTO(created, now);
+            return toPublicDTO(created, rules.cancelMinHours, now);
           },
           { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, timeout: 10_000 },
         );
@@ -187,18 +189,20 @@ async function findOwned(code: string, phone: string) {
 }
 
 export async function lookupBooking(code: string, phone: string) {
-  return toPublicDTO(await findOwned(code, phone));
+  const { booking: rules } = await getSettings();
+  return toPublicDTO(await findOwned(code, phone), rules.cancelMinHours);
 }
 
 export async function cancelBookingByCustomer(code: string, phone: string, reason?: string, now = new Date()) {
   const booking = await findOwned(code, phone);
+  const { booking: rules } = await getSettings();
   if (!isActive(booking.status)) {
     throw new AppError("POLICY", "Esta reserva não pode mais ser cancelada.");
   }
-  if (now >= cancelDeadline(booking)) {
+  if (now >= cancelDeadline(booking, rules.cancelMinHours)) {
     throw new AppError(
       "POLICY",
-      `Cancelamentos online são aceitos até ${businessConfig.cancellation.minHoursBefore}h antes do horário. Fale com a gente pelo WhatsApp.`,
+      `Cancelamentos online são aceitos até ${rules.cancelMinHours}h antes do horário. Fale com a gente pelo WhatsApp.`,
     );
   }
   const updated = await prisma.booking.update({
@@ -206,7 +210,7 @@ export async function cancelBookingByCustomer(code: string, phone: string, reaso
     data: { status: "CANCELLED", cancelledAt: now, cancelledBy: "CUSTOMER", cancelReason: reason || null },
     include: withRelations,
   });
-  return toPublicDTO(updated, now);
+  return toPublicDTO(updated, rules.cancelMinHours, now);
 }
 
 const PERIOD_LABEL = { qualquer: "qualquer horário", manha: "manhã", tarde: "tarde", noite: "noite" } as const;
@@ -226,7 +230,7 @@ export async function requestReschedule(input: z.output<typeof rescheduleRequest
     data: { rescheduleRequested: true, rescheduleNote: parts.join(" · "), rescheduleAt: now },
     include: withRelations,
   });
-  return toPublicDTO(updated, now);
+  return toPublicDTO(updated, (await getSettings()).booking.cancelMinHours, now);
 }
 
 /* ───────────────────────── Admin ───────────────────────── */
@@ -253,7 +257,8 @@ export async function listBookingsForAdmin(filter: {
     orderBy: { startAt: "asc" },
     take: 300,
   });
-  return rows.map((r) => toAdminDTO(r));
+  const { booking: rules } = await getSettings();
+  return rows.map((r) => toAdminDTO(r, rules.cancelMinHours));
 }
 
 export async function adminUpdateBooking(id: string, action: string, reason?: string, now = new Date()) {
@@ -283,7 +288,7 @@ export async function adminUpdateBooking(id: string, action: string, reason?: st
       throw new AppError("VALIDATION", "Ação inválida.");
   }
   const updated = await prisma.booking.update({ where: { id }, data, include: withRelations });
-  return toAdminDTO(updated, now);
+  return toAdminDTO(updated, (await getSettings()).booking.cancelMinHours, now);
 }
 
 export async function getAdminStats(now = new Date()) {

@@ -55,13 +55,19 @@ A barbearia "Navalha & Arte" (Porto Velho — RO) é **fictícia**: todo o conte
 | `/termos`, `/privacidade` | Termos de Uso e Política de Privacidade (LGPD) gerados a partir da configuração |
 | 404 / erro | Página 404 com animação discreta e tela de erro amigável |
 
-**Painel `/admin`** (protegido por senha em variável de ambiente)
+**Painel `/admin`** (protegido por senha) — o dono da barbearia altera tudo sem mexer em código:
 
-- Agenda por dia/barbeiro/status, com contadores
-- Confirmar, concluir, marcar falta, cancelar e tratar pedidos de reagendamento
-- Atalho para avisar o cliente no WhatsApp com mensagem pronta
-- Bloqueio de horários (por barbeiro ou da barbearia inteira)
-- Edição do horário de funcionamento por dia da semana, com pausa opcional
+| Tela | O que dá para fazer |
+| --- | --- |
+| Agenda | Filtrar por dia/barbeiro/status; confirmar, concluir, marcar falta, cancelar; avisar o cliente no WhatsApp |
+| Barbeiros | Criar, editar, desativar, excluir e reordenar; foto por upload; serviços que atende; **horário próprio ou folga por dia da semana** |
+| Serviços | Criar, editar, desativar, excluir e reordenar; preço, duração, categoria, "a partir de", destaque na Home, quem realiza |
+| Horários | Horário de funcionamento da barbearia por dia da semana, com pausa |
+| Bloqueios | Folgas e pausas pontuais (um barbeiro ou a barbearia inteira) |
+| Conteúdo | Textos do topo da Home, chamada final, galeria (upload), depoimentos e FAQ |
+| Configurações | Nome, logo (upload), slogan, SEO, **cor da marca**, contatos, endereço/mapa, números, regras de agendamento, dados legais e **senha do painel** |
+
+Tudo o que é salvo no painel atualiza o site na hora. Os arquivos em `config/` passam a ser só os **valores iniciais**.
 
 ## Instalação e execução
 
@@ -117,13 +123,24 @@ O seed (`prisma/seed.ts`) cria:
 ## Painel administrativo
 
 1. Defina no `.env`:
-   - `ADMIN_PASSWORD` — mínimo 8 caracteres
+   - `ADMIN_PASSWORD` — senha inicial (mínimo 8 caracteres)
    - `ADMIN_SESSION_SECRET` — mínimo 32 caracteres (`openssl rand -base64 48`)
 2. Acesse `/admin` (link "Área restrita" no rodapé).
+3. Troque a senha em **Configurações → Senha do painel**. A nova senha (guardada com hash scrypt) passa a valer no lugar
+   da do `.env`, e as sessões abertas em outros aparelhos são encerradas.
 
-Segurança: cookie `httpOnly` assinado com HMAC-SHA256 e validade de 8 h, comparação da senha em tempo constante,
-limite de 5 tentativas a cada 15 min por IP, `middleware.ts` protegendo `/admin` e `/api/admin`, e checagem de sessão
-repetida em cada rota (defesa em profundidade). Sem as variáveis, o painel fica desativado.
+**Esqueceu a senha?** Rode `npm run admin:reset-password` no servidor: volta a valer a `ADMIN_PASSWORD` do `.env`.
+
+Segurança: cookie `httpOnly` assinado com HMAC-SHA256 (8 h), senha comparada em tempo constante, bloqueio após
+5 senhas erradas em 15 min por IP, `middleware.ts` protegendo `/admin` e `/api/admin`, e checagem de sessão repetida em
+cada rota. Imagens enviadas ficam no banco (tabela `Media`, até 4 MB, JPG/PNG/WebP/AVIF/GIF) e são servidas em `/media/:id`
+— funciona igual em VPS e em hospedagem serverless.
+
+### Seed e dados editados no painel
+
+O seed **só cria o catálogo em banco vazio** — rodar `npm run setup` de novo nunca apaga o que foi editado no painel.
+Para restaurar barbeiros e serviços de `prisma/data.ts`: `SEED_OVERWRITE=true npm run db:seed`
+(no Windows/cmd: `set SEED_OVERWRITE=true && npm run db:seed`).
 
 ## Estrutura de pastas
 
@@ -163,12 +180,13 @@ public/images/       retratos e galeria (placeholders SVG locais)
 
 ## Regras de agendamento
 
-Configuráveis em `config/business.ts` (e horários também em `/admin/horarios`):
+Editáveis em **/admin/configuracoes → Regras de agendamento** e **/admin/horarios** (valores iniciais em `config/business.ts`):
 
 | Regra | Padrão |
 | --- | --- |
 | Fuso horário | `America/Porto_Velho` (UTC−4). Datas gravadas em UTC; exibição sempre no fuso da barbearia |
 | Horário de funcionamento | Por dia da semana, com pausa opcional (tabela `BusinessHour`) |
+| Horário do barbeiro | Opcional por dia: horário próprio ou folga (tabela `BarberHour`); sem registro, segue a barbearia |
 | Grade de horários | 15 min (`slotStepMinutes`) |
 | Duração | Cada serviço tem `durationMin`; o horário só aparece se o serviço terminar antes do fechamento/pausa |
 | Intervalo entre atendimentos | 10 min (`bufferMinutes`), aplicado antes e depois de cada reserva |
@@ -293,6 +311,7 @@ Veja [server/payments/README.md](./server/payments/README.md).
 | `npm run typecheck` | TypeScript sem emitir arquivos |
 | `npm test` | Testes unitários (Vitest) |
 | `npm run placeholders` | Regera as imagens ilustrativas SVG |
+| `npm run admin:reset-password` | Volta a senha do painel para a do `.env` |
 | `npm run db:*` | Veja [Banco de dados e seed](#banco-de-dados-e-seed) |
 
 ---

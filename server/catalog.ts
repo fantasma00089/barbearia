@@ -28,7 +28,7 @@ export const getBarbers = cache(async (): Promise<BarberDTO[]> => {
   const rows = await prisma.barber.findMany({
     where: { active: true },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    include: { services: { where: { service: { active: true } }, select: { serviceId: true } } },
+    include: { services: { where: { service: { active: true } }, select: { serviceId: true } }, hours: true },
   });
   return rows.map((b) => ({
     id: b.id,
@@ -43,8 +43,20 @@ export const getBarbers = cache(async (): Promise<BarberDTO[]> => {
     photo: b.photo,
     instagram: b.instagram,
     serviceIds: b.services.map((s) => s.serviceId),
+    customHours: b.hours.map(toHourDTO),
   }));
 });
+
+export function toHourDTO(h: BusinessHourDTO): BusinessHourDTO {
+  return {
+    dayOfWeek: h.dayOfWeek,
+    isOpen: h.isOpen,
+    openTime: h.openTime,
+    closeTime: h.closeTime,
+    breakStart: h.breakStart,
+    breakEnd: h.breakEnd,
+  };
+}
 
 /** Horário de funcionamento dos 7 dias (com fallback para a config). */
 export async function getBusinessHours(db: Db = prisma): Promise<BusinessHourDTO[]> {

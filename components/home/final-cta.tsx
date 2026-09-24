@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/motion/reveal";
 import { WhatsAppIcon } from "@/components/icons/brand-icons";
 import { homeContent } from "@/config/content";
-import { siteConfig } from "@/config/site";
+import type { SiteSettings } from "@/types/settings";
 import { whatsappLink } from "@/lib/format";
 
-export function FinalCta() {
-  const c = homeContent.finalCta;
+export function FinalCta({ settings }: { settings: SiteSettings }) {
+  const c = { ...homeContent.finalCta, ...settings.content.finalCta };
   return (
     <section className="pb-20 md:pb-28" aria-labelledby="cta-final">
       <div className="container">
@@ -27,7 +27,7 @@ export function FinalCta() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <a href={whatsappLink(`Olá! Vim pelo site da ${siteConfig.shortName}.`)} target="_blank" rel="noopener noreferrer">
+                <a href={whatsappLink(settings.contact.whatsapp, `Olá! Vim pelo site da ${settings.brand.shortName}.`)} target="_blank" rel="noopener noreferrer">
                   <WhatsAppIcon /> {c.secondary}
                 </a>
               </Button>

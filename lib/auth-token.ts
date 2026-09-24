@@ -29,8 +29,8 @@ async function hmacKey(secret: string) {
   return crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
 }
 
-export async function signSession(secret: string, now = Date.now()) {
-  const payload = b64url(enc.encode(JSON.stringify({ exp: now + ADMIN_SESSION_HOURS * 3600_000 })));
+export async function signSession(secret: string, version = 0, now = Date.now()) {
+  const payload = b64url(enc.encode(JSON.stringify({ exp: now + ADMIN_SESSION_HOURS * 3600_000, v: version })));
   const sig = await crypto.subtle.sign("HMAC", await hmacKey(secret), enc.encode(payload));
   return `${payload}.${b64url(sig)}`;
 }
@@ -46,5 +46,17 @@ export async function verifySession(token: string | undefined, secret: string | 
     return typeof exp === "number" && exp > now;
   } catch {
     return false;
+  }
+}
+
+/** Versão da sessão gravada no token (usada para invalidar sessões após troca de senha). */
+export function readSessionVersion(token: string | undefined) {
+  try {
+    const payload = token?.split(".")[0];
+    if (!payload) return -1;
+    const { v } = JSON.parse(new TextDecoder().decode(fromB64url(payload))) as { v?: number };
+    return typeof v === "number" ? v : 0;
+  } catch {
+    return -1;
   }
 }

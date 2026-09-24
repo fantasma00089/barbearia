@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { m } from "framer-motion";
 import { WhatsAppIcon } from "@/components/icons/brand-icons";
-import { siteConfig } from "@/config/site";
+import { useSettings } from "@/components/providers/settings-provider";
 import { whatsappLink } from "@/lib/format";
 import { DURATION, EASE_OUT } from "@/lib/motion";
 
@@ -12,11 +12,12 @@ const HIDDEN_ON = ["/agendar"];
 /** Botão fixo de WhatsApp — apenas no mobile/tablet. */
 export function WhatsAppFloat() {
   const pathname = usePathname();
+  const settings = useSettings();
   if (HIDDEN_ON.some((p) => pathname.startsWith(p))) return null;
 
   return (
     <m.a
-      href={whatsappLink(`Olá! Vim pelo site da ${siteConfig.shortName} e gostaria de mais informações.`)}
+      href={whatsappLink(settings.contact.whatsapp, `Olá! Vim pelo site da ${settings.brand.shortName} e gostaria de mais informações.`)}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Conversar no WhatsApp"

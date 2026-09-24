@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WhatsAppIcon } from "@/components/icons/brand-icons";
 import { bookingContent } from "@/config/content";
-import { businessConfig } from "@/config/business";
-import { siteConfig } from "@/config/site";
+import { useSettings } from "@/components/providers/settings-provider";
 import { STATUS_LABELS } from "@/lib/constants";
 import { formatDuration, formatPrice, whatsappLink } from "@/lib/format";
 import { buildIcs, downloadIcs } from "@/lib/ics";
@@ -18,6 +17,8 @@ import type { BookingPublicDTO } from "@/types";
 
 export function SuccessView({ booking }: { booking: BookingPublicDTO }) {
   const reduced = useReducedMotion();
+  const settings = useSettings();
+  const { booking: rules } = settings;
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [copied, setCopied] = useState(false);
 
@@ -40,10 +41,11 @@ export function SuccessView({ booking }: { booking: BookingPublicDTO }) {
       `reserva-${booking.code}.ics`,
       buildIcs({
         code: booking.code,
-        title: `${booking.serviceName} — ${siteConfig.shortName}`,
+        title: `${booking.serviceName} — ${settings.brand.shortName}`,
         startAt: booking.startAt,
         endAt: booking.endAt,
-        description: `Reserva ${booking.code} com ${booking.barberName}. Tolerância de atraso: ${businessConfig.lateToleranceMinutes} min.`,
+        description: `Reserva ${booking.code} com ${booking.barberName}. Tolerância de atraso: ${rules.lateToleranceMinutes} min.`,
+        settings,
       }),
     );
 
@@ -121,7 +123,7 @@ export function SuccessView({ booking }: { booking: BookingPublicDTO }) {
             <CalendarPlus aria-hidden /> Adicionar à agenda
           </Button>
           <Button asChild variant="whatsapp">
-            <a href={whatsappLink(waMessage)} target="_blank" rel="noopener noreferrer">
+            <a href={whatsappLink(settings.contact.whatsapp, waMessage)} target="_blank" rel="noopener noreferrer">
               <WhatsAppIcon /> Enviar no WhatsApp
             </a>
           </Button>
@@ -132,8 +134,8 @@ export function SuccessView({ booking }: { booking: BookingPublicDTO }) {
           </Button>
         </div>
         <p className="mt-6 text-xs text-muted-foreground">
-          Cancelamento online até {businessConfig.cancellation.minHoursBefore}h antes. Tolerância de atraso:{" "}
-          {businessConfig.lateToleranceMinutes} minutos.
+          Cancelamento online até {rules.cancelMinHours}h antes. Tolerância de atraso:{" "}
+          {rules.lateToleranceMinutes} minutos.
         </p>
       </m.div>
     </div>

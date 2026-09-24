@@ -3,12 +3,19 @@
 Este documento lista **tudo o que muda de uma barbearia para outra** e onde fica cada item.
 Itens marcados com **[FICTÍCIO]** são dados de demonstração e **precisam** ser substituídos antes de publicar.
 
-> Fluxo sugerido: envie este arquivo ao cliente, colete os textos reais e aplique nos arquivos indicados.
-> Nenhuma troca abaixo exige mudar componentes ou arquitetura.
+> **Quase tudo pode ser trocado pelo próprio dono da barbearia em `/admin`**, sem código:
+> Barbeiros · Serviços · Horários · Bloqueios · Conteúdo (Home, galeria, depoimentos, FAQ) ·
+> Configurações (nome, logo, cor, contatos, endereço, números, regras, dados legais, senha).
+>
+> Os arquivos citados abaixo são os **valores iniciais** de uma instalação nova. Edite-os quando quiser que um site
+> já nasça com os dados do cliente. Só exigem código: fontes, textos fixos das páginas internas e dos Termos/Privacidade.
 
 ---
 
 ## Checklist de personalização
+
+Pelo painel (`/admin`): configurações, conteúdo, barbeiros com fotos, serviços, horários e senha.
+Por arquivo (opcional, para já nascer personalizado):
 
 - [ ] Nome, slogan, descrição e logo — `config/site.ts`, `components/shared/logo.tsx`, `public/icon.svg`
 - [ ] Contatos, endereço, coordenadas e redes — `config/site.ts`

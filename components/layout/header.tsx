@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "./theme-toggle";
 import { navigation } from "@/config/content";
-import { siteConfig } from "@/config/site";
+import { useSettings } from "@/components/providers/settings-provider";
 import { whatsappLink } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { WhatsAppIcon } from "@/components/icons/brand-icons";
@@ -20,6 +20,7 @@ function isActive(pathname: string, href: string) {
 
 export function Header() {
   const pathname = usePathname();
+  const settings = useSettings();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -96,7 +97,7 @@ export function Header() {
                   <Link href="/agendar">Agendar agora</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline">
-                  <a href={whatsappLink(`Olá! Vim pelo site da ${siteConfig.shortName}.`)} target="_blank" rel="noopener noreferrer">
+                  <a href={whatsappLink(settings.contact.whatsapp, `Olá! Vim pelo site da ${settings.brand.shortName}.`)} target="_blank" rel="noopener noreferrer">
                     <WhatsAppIcon /> WhatsApp
                   </a>
                 </Button>

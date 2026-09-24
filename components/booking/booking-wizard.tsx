@@ -15,7 +15,7 @@ import { BarberStep } from "./steps/barber-step";
 import { DateStep } from "./steps/date-step";
 import { TimeStep } from "./steps/time-step";
 import { CustomerStep, type CustomerData } from "./steps/customer-step";
-import { businessConfig } from "@/config/business";
+import { useSettings } from "@/components/providers/settings-provider";
 import { ApiError, apiFetch, firstFieldErrors } from "@/lib/api-client";
 import { ANY_BARBER } from "@/lib/constants";
 import { formatDateStr } from "@/lib/time";
@@ -27,7 +27,7 @@ import type { BarberDTO, BookingPublicDTO, BusinessHourDTO, ServiceDTO } from "@
 const STEP_COPY = [
   { title: "Escolha o serviço", description: "O que vamos fazer hoje?" },
   { title: "Escolha o barbeiro", description: "Tem um preferido? Ou deixe com a gente." },
-  { title: "Escolha a data", description: "Mostramos apenas os dias em que a barbearia abre." },
+  { title: "Escolha a data", description: "Dias sem atendimento aparecem como indisponíveis." },
   { title: "Escolha o horário", description: "Horários de Porto Velho (UTC−4), já considerando a duração do serviço." },
   { title: "Seus dados", description: "Sem cadastro. Só o necessário para confirmar seu horário." },
   { title: "Revise e confirme", description: "Confira tudo antes de confirmar." },
@@ -46,6 +46,7 @@ export interface BookingWizardProps {
 
 export function BookingWizard({ services, barbers, hours, today, maxAdvanceDays, initial }: BookingWizardProps) {
   const reduced = useReducedMotion();
+  const settings = useSettings();
   const topRef = useRef<HTMLDivElement | HTMLFormElement | null>(null);
   const shouldFocus = useRef(false);
 
@@ -238,7 +239,14 @@ export function BookingWizard({ services, barbers, hours, today, maxAdvanceDays,
                   <BarberStep barbers={eligibleBarbers} selectedId={barberId} onSelect={selectBarber} serviceName={service.name} />
                 )}
                 {step === 2 && (
-                  <DateStep today={today} maxAdvanceDays={maxAdvanceDays} hours={hours} selected={date} onSelect={selectDate} />
+                  <DateStep
+                    today={today}
+                    maxAdvanceDays={maxAdvanceDays}
+                    hours={hours}
+                    barbers={barber ? [barber] : eligibleBarbers}
+                    selected={date}
+                    onSelect={selectDate}
+                  />
                 )}
                 {step === 3 && (
                   <TimeStep
@@ -297,7 +305,7 @@ export function BookingWizard({ services, barbers, hours, today, maxAdvanceDays,
                           <Link href="/privacidade" target="_blank" className="text-primary underline underline-offset-4">
                             Política de Privacidade
                           </Link>
-                          , incluindo a política de cancelamento (até {businessConfig.cancellation.minHoursBefore}h antes).
+                          , incluindo a política de cancelamento (até {settings.booking.cancelMinHours}h antes).
                         </span>
                       </label>
                       <AnimatePresence initial={false}>
@@ -357,7 +365,7 @@ export function BookingWizard({ services, barbers, hours, today, maxAdvanceDays,
           <h2 className="font-sans text-xs font-semibold uppercase tracking-widest text-primary">Seu agendamento</h2>
           <BookingSummary data={summaryData} className="mt-3" onEdit={(s) => (s <= maxReached ? goTo(s) : undefined)} />
           <p className="mt-4 border-t pt-4 text-xs leading-relaxed text-muted-foreground">
-            Pagamento na barbearia (Pix, cartão ou dinheiro). Cancelamento online até {businessConfig.cancellation.minHoursBefore}h antes.
+            Pagamento na barbearia (Pix, cartão ou dinheiro). Cancelamento online até {settings.booking.cancelMinHours}h antes.
           </p>
         </div>
       </aside>

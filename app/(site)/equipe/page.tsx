@@ -6,17 +6,20 @@ import { PageHeader } from "@/components/shared/page-header";
 import { PlaceholderNote } from "@/components/shared/placeholder-note";
 import { BarberCard } from "@/components/team/barber-card";
 import { bookingContent } from "@/config/content";
-import { siteConfig } from "@/config/site";
 import { buildMetadata } from "@/lib/seo";
+import { getSettings } from "@/server/settings";
 import { getBarbers, getServices } from "@/server/catalog";
 
 export const revalidate = 300;
 
-export const metadata = buildMetadata({
-  title: "Nossa equipe",
-  description: `Conheça os barbeiros da ${siteConfig.shortName}: especialistas em fade, barba, coloração e cortes infantis em ${siteConfig.address.city}.`,
-  path: "/equipe",
-});
+export async function generateMetadata() {
+  const s = await getSettings();
+  return buildMetadata(s, {
+    title: "Nossa equipe",
+    description: `Conheça os barbeiros da ${s.brand.shortName}: especialistas em fade, barba, coloração e cortes infantis em ${s.address.city}.`,
+    path: "/equipe",
+  });
+}
 
 export default async function TeamPage() {
   const [barbers, services] = await Promise.all([getBarbers(), getServices()]);

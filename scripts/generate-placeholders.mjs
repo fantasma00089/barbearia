@@ -80,7 +80,7 @@ function bust(id, hair, beard, { scale = 1, dx = 0, dy = 0 } = {}) {
 }
 
 function portrait({ file, initials, hair, beard, hue }) {
-  const id = initials.toLowerCase();
+  const id = initials.toLowerCase() || "ph";
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-label="Retrato ilustrativo">
   ${defs(id, hue)}
   <rect width="400" height="500" fill="url(#bg-${id})"/>
@@ -129,6 +129,7 @@ portrait({ file: "rafael-moreira", initials: "RM", hair: "fade", beard: "stubble
 portrait({ file: "lucas-almeida", initials: "LA", hair: "classic", beard: "full" });
 portrait({ file: "diego-souza", initials: "DS", hair: "color", beard: "none", hue: "#e0b35a" });
 portrait({ file: "bruno-cardoso", initials: "BC", hair: "curly", beard: "stubble", hue: "#c98a4a" });
+portrait({ file: "placeholder", initials: "", hair: "buzz", beard: "none" });
 
 galleryTile({ file: "corte-01", hair: "fade", beard: "none", variant: "rings", tall: true });
 galleryTile({ file: "corte-02", hair: "buzz", beard: "designed", variant: "grid" });

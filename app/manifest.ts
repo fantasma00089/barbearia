@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
-import { siteConfig } from "@/config/site";
+import { getSettings } from "@/server/settings";
 
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const s = await getSettings();
   return {
-    name: siteConfig.name,
-    short_name: siteConfig.shortName,
-    description: siteConfig.description,
+    name: s.brand.name,
+    short_name: s.brand.shortName,
+    description: s.brand.description,
     start_url: "/",
     display: "standalone",
     background_color: "#0a0a0a",

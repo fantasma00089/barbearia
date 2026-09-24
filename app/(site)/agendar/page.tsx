@@ -1,26 +1,28 @@
 import { BookingWizard } from "@/components/booking/booking-wizard";
 import { PageHeader } from "@/components/shared/page-header";
 import { bookingContent } from "@/config/content";
-import { businessConfig } from "@/config/business";
-import { siteConfig } from "@/config/site";
 import { ANY_BARBER } from "@/lib/constants";
 import { buildMetadata } from "@/lib/seo";
+import { getSettings } from "@/server/settings";
 import { todayStr } from "@/lib/time";
 import { getBarbers, getBusinessHours, getServices } from "@/server/catalog";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = buildMetadata({
-  title: "Agendar horário",
-  description: `Agende online seu corte ou barba na ${siteConfig.shortName}, em ${siteConfig.address.city}. Escolha serviço, barbeiro, data e horário em menos de um minuto.`,
-  path: "/agendar",
-});
+export async function generateMetadata() {
+  const s = await getSettings();
+  return buildMetadata(s, {
+    title: "Agendar horário",
+    description: `Agende online seu corte ou barba na ${s.brand.shortName}, em ${s.address.city}. Escolha serviço, barbeiro, data e horário em menos de um minuto.`,
+    path: "/agendar",
+  });
+}
 
 type SearchParams = Promise<{ servico?: string; barbeiro?: string }>;
 
 export default async function BookingPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const [services, barbers, hours] = await Promise.all([getServices(), getBarbers(), getBusinessHours()]);
+  const [services, barbers, hours, settings] = await Promise.all([getServices(), getBarbers(), getBusinessHours(), getSettings()]);
 
   // Pré-seleção via URL: /agendar?servico=fade-degrade&barbeiro=rafael-moreira
   const service = services.find((s) => s.slug === params.servico) ?? null;
@@ -39,7 +41,7 @@ export default async function BookingPage({ searchParams }: { searchParams: Sear
           barbers={barbers}
           hours={hours}
           today={todayStr()}
-          maxAdvanceDays={businessConfig.booking.maxAdvanceDays}
+          maxAdvanceDays={settings.booking.maxAdvanceDays}
           initial={{ serviceId: service?.id ?? null, barberId, step }}
         />
       </section>

@@ -1,26 +1,28 @@
 import { NextResponse } from "next/server";
-import { checkAdminPassword, isAdminConfigured } from "@/server/auth/admin";
+import { checkAdminPassword, getSessionVersion, isAdminConfigured } from "@/server/auth/admin";
 import { AppError } from "@/server/errors";
 import { clientIp, readJson, route } from "@/server/http";
-import { rateLimit } from "@/server/rate-limit";
+import { rateLimit, rateLimitReset } from "@/server/rate-limit";
 import { ADMIN_COOKIE, ADMIN_SESSION_HOURS, getSessionSecret, signSession } from "@/lib/auth-token";
 import { adminLoginSchema } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
 
 export const POST = route(async (req: Request) => {
-  rateLimit(`admin-login:${clientIp(req)}`, 5, 15 * 60_000);
-  if (!isAdminConfigured()) {
+  const limitKey = `admin-login:${clientIp(req)}`;
+  rateLimit(limitKey, 5, 15 * 60_000);
+  if (!(await isAdminConfigured())) {
     throw new AppError(
       "UNAVAILABLE",
       "Painel desativado: defina ADMIN_PASSWORD (8+ caracteres) e ADMIN_SESSION_SECRET (32+ caracteres) no .env.",
     );
   }
   const { password } = adminLoginSchema.parse(await readJson(req));
-  if (!checkAdminPassword(password)) throw new AppError("UNAUTHORIZED", "Senha incorreta.");
+  if (!(await checkAdminPassword(password))) throw new AppError("UNAUTHORIZED", "Senha incorreta.");
+  rateLimitReset(limitKey);
 
   const res = NextResponse.json({ ok: true });
-  res.cookies.set(ADMIN_COOKIE, await signSession(getSessionSecret()!), {
+  res.cookies.set(ADMIN_COOKIE, await signSession(getSessionSecret()!, await getSessionVersion()), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",

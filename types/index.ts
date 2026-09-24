@@ -36,6 +36,8 @@ export interface BarberDTO {
   photo: string;
   instagram: string | null;
   serviceIds: string[];
+  /** Dias com horário próprio (os demais seguem o horário da barbearia). */
+  customHours: BusinessHourDTO[];
 }
 
 export interface BusinessHourDTO {

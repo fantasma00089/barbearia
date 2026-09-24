@@ -7,13 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Parallax } from "@/components/motion/parallax";
 import { HeroArt } from "./hero-art";
 import { homeContent } from "@/config/content";
-import { siteConfig } from "@/config/site";
+import { useSettings } from "@/components/providers/settings-provider";
 import { DURATION, EASE_OUT, fadeUp, staggerContainer } from "@/lib/motion";
 
 export function Hero() {
   const reduced = useReducedMotion();
   const item = fadeUp(reduced, 20);
-  const { hero } = homeContent;
+  const settings = useSettings();
+  const hero = { ...homeContent.hero, ...settings.content.hero };
+  const titleLines = [hero.titleLine1, hero.titleLine2].filter(Boolean);
 
   return (
     <section className="relative overflow-hidden" aria-labelledby="hero-title">
@@ -23,14 +25,16 @@ export function Hero() {
 
       <div className="container relative grid items-center gap-12 pb-16 pt-10 md:pb-24 md:pt-16 lg:grid-cols-[1.15fr_1fr] lg:gap-16 lg:pb-28">
         <m.div variants={staggerContainer(0.08, 0.05)} initial="hidden" animate="show">
-          <m.p variants={item} className="eyebrow mb-6">
-            <MapPin className="size-3.5" aria-hidden />
-            {hero.eyebrow}
-          </m.p>
+          {hero.eyebrow && (
+            <m.p variants={item} className="eyebrow mb-6">
+              <MapPin className="size-3.5" aria-hidden />
+              {hero.eyebrow}
+            </m.p>
+          )}
 
           <h1 id="hero-title" className="text-[2.75rem] font-semibold uppercase leading-[0.98] sm:text-6xl xl:text-7xl">
-            <span className="sr-only">{siteConfig.name} — </span>
-            {hero.titleLines.map((line, i) => (
+            <span className="sr-only">{settings.brand.name} — </span>
+            {titleLines.map((line, i) => (
               <m.span key={line} variants={item} className={i === 1 ? "text-gradient-gold block" : "block"}>
                 {line}
               </m.span>
@@ -57,10 +61,14 @@ export function Hero() {
           <m.div variants={item} className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-2">
               <Star className="size-4 fill-primary text-primary" aria-hidden />
-              <strong className="text-foreground">{siteConfig.stats.rating.toFixed(1).replace(".", ",")}</strong> no Google
+              <strong className="text-foreground">{settings.stats.rating.toFixed(1).replace(".", ",")}</strong> no Google
             </span>
-            <span className="hidden h-4 w-px bg-border sm:block" aria-hidden />
-            <span>{hero.badge}</span>
+            {hero.badge && (
+              <>
+                <span className="hidden h-4 w-px bg-border sm:block" aria-hidden />
+                <span>{hero.badge}</span>
+              </>
+            )}
           </m.div>
         </m.div>
 

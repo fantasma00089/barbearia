@@ -11,25 +11,32 @@ import { JsonLd } from "@/components/shared/json-ld";
 import { summarizeHours } from "@/lib/hours";
 import { barberShopJsonLd } from "@/lib/seo";
 import { getBarbers, getBusinessHoursCached, getServices } from "@/server/catalog";
+import { getSettings } from "@/server/settings";
 
 export const revalidate = 300;
 
 export default async function HomePage() {
-  const [services, barbers, hours] = await Promise.all([getServices(), getBarbers(), getBusinessHoursCached()]);
+  const [services, barbers, hours, settings] = await Promise.all([
+    getServices(),
+    getBarbers(),
+    getBusinessHoursCached(),
+    getSettings(),
+  ]);
+  const { content } = settings;
   const featured = services.filter((s) => s.featured).slice(0, 6);
 
   return (
     <>
-      <JsonLd data={[barberShopJsonLd(hours), faqJsonLd()]} />
+      <JsonLd data={[barberShopJsonLd(settings, hours), ...(content.faq.length ? [faqJsonLd(content.faq)] : [])]} />
       <Hero />
-      <SocialProof />
+      <SocialProof stats={settings.stats} />
       <FeaturedServices services={featured.length ? featured : services.slice(0, 6)} />
       <BarbersHighlight barbers={barbers} />
-      <Gallery />
-      <Testimonials />
-      <Location hours={summarizeHours(hours)} />
-      <FaqSection />
-      <FinalCta />
+      <Gallery gallery={content.gallery} />
+      <Testimonials testimonials={content.testimonials} />
+      <Location settings={settings} hours={summarizeHours(hours)} />
+      <FaqSection faq={content.faq} />
+      <FinalCta settings={settings} />
     </>
   );
 }

@@ -5,25 +5,28 @@ import { PageHeader } from "@/components/shared/page-header";
 import { ServiceCard } from "@/components/services/service-card";
 import { ServicesExplorer } from "@/components/services/services-explorer";
 import { JsonLd } from "@/components/shared/json-ld";
-import { siteConfig } from "@/config/site";
 import { buildMetadata } from "@/lib/seo";
+import { getSettings } from "@/server/settings";
 import { getServices } from "@/server/catalog";
 
 export const revalidate = 300;
 
-export const metadata = buildMetadata({
-  title: "Serviços e preços",
-  description: `Cortes, barba, combos, química e kids na ${siteConfig.shortName}, em ${siteConfig.address.city}. Veja duração e preço de cada serviço e agende online.`,
-  path: "/servicos",
-});
+export async function generateMetadata() {
+  const s = await getSettings();
+  return buildMetadata(s, {
+    title: "Serviços e preços",
+    description: `Cortes, barba, combos, química e kids na ${s.brand.shortName}, em ${s.address.city}. Veja duração e preço de cada serviço e agende online.`,
+    path: "/servicos",
+  });
+}
 
 export default async function ServicesPage() {
-  const services = await getServices();
+  const [services, s] = await Promise.all([getServices(), getSettings()]);
 
   const offerCatalog = {
     "@context": "https://schema.org",
     "@type": "OfferCatalog",
-    name: `Serviços — ${siteConfig.name}`,
+    name: `Serviços — ${s.brand.name}`,
     itemListElement: services.map((s) => ({
       "@type": "Offer",
       price: (s.priceCents / 100).toFixed(2),

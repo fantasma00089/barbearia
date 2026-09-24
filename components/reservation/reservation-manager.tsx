@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/forms/field";
 import { FormAlert } from "@/components/forms/form-alert";
 import { WhatsAppIcon } from "@/components/icons/brand-icons";
-import { businessConfig } from "@/config/business";
+import { useSettings } from "@/components/providers/settings-provider";
 import { ApiError, apiFetch, firstFieldErrors } from "@/lib/api-client";
 import { STATUS_LABELS } from "@/lib/constants";
 import { formatDateTime } from "@/lib/time";
@@ -42,6 +42,7 @@ type Panel = "none" | "cancel" | "reschedule";
 export function ReservationManager({ today }: { today: string }) {
   const params = useSearchParams();
   const reduced = useReducedMotion();
+  const settings = useSettings();
 
   const [code, setCode] = useState(params.get("codigo") ?? "");
   const [phone, setPhone] = useState("");
@@ -211,7 +212,7 @@ export function ReservationManager({ today }: { today: string }) {
                       </Button>
                       <Button asChild variant="ghost">
                         <a
-                          href={whatsappLink(`Olá! Sobre minha reserva ${booking.code} (${booking.dateLabel} às ${booking.timeLabel}).`)}
+                          href={whatsappLink(settings.contact.whatsapp, `Olá! Sobre minha reserva ${booking.code} (${booking.dateLabel} às ${booking.timeLabel}).`)}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
@@ -223,7 +224,7 @@ export function ReservationManager({ today }: { today: string }) {
                     {!booking.canCancel && (
                       <p className="text-xs text-muted-foreground">
                         O cancelamento online era permitido até {formatDateTime(new Date(booking.cancelDeadline))} (
-                        {businessConfig.cancellation.minHoursBefore}h antes). Para cancelar agora, fale com a gente pelo WhatsApp.
+                        {settings.booking.cancelMinHours}h antes). Para cancelar agora, fale com a gente pelo WhatsApp.
                       </p>
                     )}
                     {booking.rescheduleRequested && (

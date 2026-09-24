@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CalendarDays, Clock, ExternalLink, LogOut, Ban } from "lucide-react";
+import { Ban, CalendarDays, Clock, ExternalLink, FileText, LogOut, Scissors, Settings, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
@@ -10,8 +10,12 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   { href: "/admin", label: "Agenda", icon: CalendarDays },
-  { href: "/admin/bloqueios", label: "Bloqueios", icon: Ban },
+  { href: "/admin/barbeiros", label: "Barbeiros", icon: Users },
+  { href: "/admin/servicos", label: "Serviços", icon: Scissors },
   { href: "/admin/horarios", label: "Horários", icon: Clock },
+  { href: "/admin/bloqueios", label: "Bloqueios", icon: Ban },
+  { href: "/admin/conteudo", label: "Conteúdo", icon: FileText },
+  { href: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
 
 export function AdminNav() {
@@ -31,7 +35,7 @@ export function AdminNav() {
           <LogoMark className="size-8" />
           <span className="hidden font-display text-lg uppercase tracking-wide sm:inline">Painel</span>
         </Link>
-        <nav aria-label="Painel" className="flex flex-1 gap-1 overflow-x-auto">
+        <nav aria-label="Painel" className="scrollbar-none flex flex-1 gap-1 overflow-x-auto">
           {LINKS.map(({ href, label, icon: Icon }) => {
             const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
             return (

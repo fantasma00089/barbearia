@@ -1,5 +1,3 @@
-import { siteConfig } from "@/config/site";
-
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 export function formatPrice(cents: number, from = false) {
@@ -31,15 +29,15 @@ export function maskPhone(value: string) {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
 
-/** Link wa.me. Sem `phone`, usa o WhatsApp da barbearia. */
-export function whatsappLink(message?: string, phone: string = siteConfig.contact.whatsapp) {
+/** Link wa.me para um número com DDI (ex.: settings.contact.whatsapp). */
+export function whatsappLink(phone: string, message?: string) {
   const base = `https://wa.me/${phone.replace(/\D/g, "")}`;
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;
 }
 
 /** WhatsApp de cliente (dígitos com DDD) → link wa.me com DDI 55. */
 export function customerWhatsappLink(digits: string, message?: string) {
-  return whatsappLink(message, `55${digits.replace(/\D/g, "")}`);
+  return whatsappLink(`55${digits.replace(/\D/g, "")}`, message);
 }
 
 export function formatNumber(n: number) {

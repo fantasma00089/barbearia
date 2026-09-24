@@ -4,8 +4,9 @@ import { ContactDetails } from "@/components/contact/contact-details";
 import { MapEmbed } from "@/components/contact/map-embed";
 import { homeContent } from "@/config/content";
 import type { HoursGroup } from "@/lib/hours";
+import type { SiteSettings } from "@/types/settings";
 
-export function Location({ hours }: { hours: HoursGroup[] }) {
+export function Location({ settings, hours }: { settings: SiteSettings; hours: HoursGroup[] }) {
   const c = homeContent.location;
   return (
     <section className="border-y bg-card/30 py-20 md:py-28" aria-labelledby="localizacao">
@@ -13,7 +14,7 @@ export function Location({ hours }: { hours: HoursGroup[] }) {
         <SectionHeading id="localizacao" eyebrow={c.eyebrow} title={c.title} description={c.description} />
         <div className="mt-12 grid gap-6 lg:grid-cols-[1fr_1.3fr]">
           <Reveal>
-            <ContactDetails hours={hours} />
+            <ContactDetails settings={settings} hours={hours} />
           </Reveal>
           <Reveal delay={0.06}>
             <MapEmbed className="h-full min-h-[360px]" />

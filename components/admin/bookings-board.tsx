@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { FormAlert } from "@/components/forms/form-alert";
 import { WhatsAppIcon } from "@/components/icons/brand-icons";
-import { siteConfig } from "@/config/site";
+import { useSettings } from "@/components/providers/settings-provider";
 import { apiFetch } from "@/lib/api-client";
 import { STATUS_LABELS } from "@/lib/constants";
 import { customerWhatsappLink, formatPhone, formatPrice } from "@/lib/format";
@@ -44,6 +44,7 @@ interface Props {
 
 export function BookingsBoard({ bookings, barbers, filters, today }: Props) {
   const router = useRouter();
+  const settings = useSettings();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -73,7 +74,7 @@ export function BookingsBoard({ bookings, barbers, filters, today }: Props) {
   };
 
   const confirmMessage = (b: AdminBookingDTO) =>
-    `Olá, ${b.customerName.split(" ")[0]}! Sua reserva ${b.code} na ${siteConfig.shortName} está confirmada: ${b.serviceName} com ${b.barberName}, ${b.dateLabel} às ${b.timeLabel}. Até lá!`;
+    `Olá, ${b.customerName.split(" ")[0]}! Sua reserva ${b.code} na ${settings.brand.shortName} está confirmada: ${b.serviceName} com ${b.barberName}, ${b.dateLabel} às ${b.timeLabel}. Até lá!`;
 
   return (
     <div className="space-y-6">

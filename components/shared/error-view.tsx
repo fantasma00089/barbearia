@@ -5,8 +5,10 @@ import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/icons/brand-icons";
 import { whatsappLink } from "@/lib/format";
+import { useSettings } from "@/components/providers/settings-provider";
 
 export function ErrorView({ reset, digest }: { reset: () => void; digest?: string }) {
+  const settings = useSettings();
   return (
     <section className="container flex min-h-[60vh] flex-col items-center justify-center py-20 text-center" role="alert">
       <p className="eyebrow mb-4">Ops!</p>
@@ -19,7 +21,7 @@ export function ErrorView({ reset, digest }: { reset: () => void; digest?: strin
           <RotateCcw aria-hidden /> Tentar novamente
         </Button>
         <Button asChild size="lg" variant="outline">
-          <a href={whatsappLink("Olá! Tive um problema no site.")} target="_blank" rel="noopener noreferrer">
+          <a href={whatsappLink(settings.contact.whatsapp, "Olá! Tive um problema no site.")} target="_blank" rel="noopener noreferrer">
             <WhatsAppIcon /> WhatsApp
           </a>
         </Button>

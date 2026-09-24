@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field } from "@/components/forms/field";
 import { FormAlert } from "@/components/forms/form-alert";
-import { siteConfig } from "@/config/site";
+import { useSettings } from "@/components/providers/settings-provider";
 import { whatsappLink } from "@/lib/format";
 import { contactMessageSchema } from "@/lib/validation/booking";
 import { flattenFieldErrors } from "@/lib/validation/errors";
@@ -26,6 +26,7 @@ const SUBJECTS = [
  * com a mensagem pronta. Nenhum dado é armazenado no servidor.
  */
 export function WhatsAppForm() {
+  const settings = useSettings();
   const [name, setName] = useState("");
   const [subject, setSubject] = useState<(typeof SUBJECTS)[number]["value"]>("agendamento");
   const [message, setMessage] = useState("");
@@ -43,8 +44,8 @@ export function WhatsAppForm() {
     }
     setErrors({});
     const label = SUBJECTS.find((s) => s.value === subject)!.label;
-    const text = `Olá, ${siteConfig.shortName}! Sou ${parsed.data.name}.\nAssunto: ${label}\n\n${parsed.data.message}`;
-    window.open(whatsappLink(text), "_blank", "noopener,noreferrer");
+    const text = `Olá, ${settings.brand.shortName}! Sou ${parsed.data.name}.\nAssunto: ${label}\n\n${parsed.data.message}`;
+    window.open(whatsappLink(settings.contact.whatsapp, text), "_blank", "noopener,noreferrer");
     setSent("Abrimos o WhatsApp com sua mensagem. É só tocar em enviar!");
   };
 

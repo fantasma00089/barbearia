@@ -9,6 +9,7 @@ import { FormAlert } from "@/components/forms/form-alert";
 import { WhatsAppIcon } from "@/components/icons/brand-icons";
 import { bookingContent } from "@/config/content";
 import { whatsappLink } from "@/lib/format";
+import { useSettings } from "@/components/providers/settings-provider";
 import { DURATION, EASE_OUT, STAGGER } from "@/lib/motion";
 import { formatDateStr, timeToMinutes } from "@/lib/time";
 import type { AvailabilityResult, SlotDTO } from "@/types";
@@ -51,6 +52,7 @@ export function TimeStep({
   conflictMessage: string | null;
 }) {
   const reduced = useReducedMotion();
+  const settings = useSettings();
 
   if (loading || (!data && !error)) {
     return (
@@ -100,7 +102,7 @@ export function TimeStep({
             </Button>
           )}
           <Button asChild variant="ghost">
-            <a href={whatsappLink("Olá! Não encontrei horário no site. Vocês têm algum encaixe?")} target="_blank" rel="noopener noreferrer">
+            <a href={whatsappLink(settings.contact.whatsapp, "Olá! Não encontrei horário no site. Vocês têm algum encaixe?")} target="_blank" rel="noopener noreferrer">
               <WhatsAppIcon /> Pedir encaixe
             </a>
           </Button>

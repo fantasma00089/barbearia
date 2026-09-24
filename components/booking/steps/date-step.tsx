@@ -6,7 +6,8 @@ import { OptionCard } from "../option-card";
 import { Button } from "@/components/ui/button";
 import { addDays, formatDateStr, weekdayOf } from "@/lib/time";
 import { WEEKDAYS_SHORT } from "@/config/business";
-import type { BusinessHourDTO } from "@/types";
+import { effectiveHours } from "@/lib/hours-client";
+import type { BarberDTO, BusinessHourDTO } from "@/types";
 
 const INITIAL_DAYS = 14;
 
@@ -14,12 +15,15 @@ export function DateStep({
   today,
   maxAdvanceDays,
   hours,
+  barbers,
   selected,
   onSelect,
 }: {
   today: string;
   maxAdvanceDays: number;
   hours: BusinessHourDTO[];
+  /** Barbeiros considerados (o escolhido, ou todos que fazem o serviço). */
+  barbers: BarberDTO[];
   selected: string | null;
   onSelect: (date: string) => void;
 }) {
@@ -33,9 +37,12 @@ export function DateStep({
       Array.from({ length: maxAdvanceDays + 1 }, (_, i) => {
         const date = addDays(today, i);
         const wd = weekdayOf(date);
-        return { date, wd, open: hours[wd]?.isOpen ?? false, i };
+        const open = barbers.length
+          ? barbers.some((b) => effectiveHours(hours, b.customHours, wd)?.isOpen)
+          : (hours[wd]?.isOpen ?? false);
+        return { date, wd, open, i };
       }),
-    [today, maxAdvanceDays, hours],
+    [today, maxAdvanceDays, hours, barbers],
   );
   const visible = expanded ? days : days.slice(0, INITIAL_DAYS);
 
@@ -60,9 +67,9 @@ export function DateStep({
               </span>
               <span aria-hidden className="font-display text-2xl font-semibold leading-none">{date.slice(8)}</span>
               <span aria-hidden className="text-[11px] text-muted-foreground">
-                {open ? formatDateStr(date, { month: "short" }).replace(".", "") : "Fechado"}
+                {open ? formatDateStr(date, { month: "short" }).replace(".", "") : "Indisponível"}
               </span>
-              <span className="sr-only">{i < 2 ? `${label}, ` : ""}{formatDateStr(date)}{open ? "" : " — fechado"}</span>
+              <span className="sr-only">{i < 2 ? `${label}, ` : ""}{formatDateStr(date)}{open ? "" : " — indisponível"}</span>
             </OptionCard>
           );
         })}

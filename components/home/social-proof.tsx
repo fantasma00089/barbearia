@@ -1,11 +1,10 @@
 import { Award, Star, Users } from "lucide-react";
 import { Stagger, StaggerItem } from "@/components/motion/reveal";
 import { homeContent } from "@/config/content";
-import { siteConfig } from "@/config/site";
 import { formatNumber } from "@/lib/format";
+import type { SiteSettings } from "@/types/settings";
 
-export function SocialProof() {
-  const { stats } = siteConfig;
+export function SocialProof({ stats }: { stats: SiteSettings["stats"] }) {
   const labels = homeContent.socialProof;
   const items = [
     {
@@ -13,7 +12,7 @@ export function SocialProof() {
       value: stats.rating.toFixed(1).replace(".", ","),
       label: `${labels.ratingLabel} · ${formatNumber(stats.reviewsCount)} ${labels.reviewsLabel}`,
     },
-    { icon: Users, value: `${Math.floor(stats.clientsServed / 1000)} mil+`, label: labels.clientsLabel },
+    { icon: Users, value: stats.clientsServed >= 1000 ? `${Math.floor(stats.clientsServed / 1000)} mil+` : formatNumber(stats.clientsServed), label: labels.clientsLabel },
     { icon: Award, value: `${stats.yearsExperience}`, label: labels.yearsLabel },
   ];
 

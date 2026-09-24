@@ -17,16 +17,30 @@ const DEMO_BOOKINGS = [
   { dayOffset: 3, time: "18:00", barber: "rafael-moreira", service: "corte-navalhado", name: "Fábio Demo", status: "PENDING" },
 ] as const;
 
+/**
+ * Por padrão o seed só CRIA o que não existe — nunca sobrescreve o que foi editado no painel.
+ * Para restaurar o catálogo de prisma/data.ts: SEED_OVERWRITE=true npm run db:seed
+ */
+const overwrite = process.env.SEED_OVERWRITE === "true";
+
 async function main() {
-  console.log("🌱 Populando banco…");
+  console.log(`🌱 Populando banco${overwrite ? " (sobrescrevendo catálogo)" : ""}…`);
 
   // Horário de funcionamento
   for (const h of businessConfig.defaultHours) {
     await prisma.businessHour.upsert({
       where: { dayOfWeek: h.dayOfWeek },
-      update: { ...h },
+      update: overwrite ? { ...h } : {},
       create: { ...h },
     });
+  }
+
+  // Catálogo (serviços, barbeiros, reservas demo) só é criado em banco vazio,
+  // para não recriar o que foi excluído ou editado no painel.
+  const hasCatalog = (await prisma.barber.count()) + (await prisma.service.count()) > 0;
+  if (hasCatalog && !overwrite) {
+    console.log("✅ Catálogo já existe — mantido (use SEED_OVERWRITE=true para restaurar o de prisma/data.ts).");
+    return;
   }
 
   // Serviços
@@ -43,7 +57,11 @@ async function main() {
       active: true,
       sortOrder: i,
     };
-    const row = await prisma.service.upsert({ where: { slug: s.slug }, update: data, create: { slug: s.slug, ...data } });
+    const row = await prisma.service.upsert({
+      where: { slug: s.slug },
+      update: overwrite ? data : {},
+      create: { slug: s.slug, ...data },
+    });
     serviceIds.set(s.slug, row.id);
   }
 
@@ -63,7 +81,11 @@ async function main() {
       active: true,
       sortOrder: i,
     };
-    const row = await prisma.barber.upsert({ where: { slug: b.slug }, update: data, create: { slug: b.slug, ...data } });
+    const row = await prisma.barber.upsert({
+      where: { slug: b.slug },
+      update: overwrite ? data : {},
+      create: { slug: b.slug, ...data },
+    });
     barberIds.set(b.slug, row.id);
 
     await prisma.barberService.deleteMany({ where: { barberId: row.id } });

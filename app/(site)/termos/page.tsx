@@ -1,26 +1,29 @@
 import Link from "next/link";
 import { LegalDocument, type LegalSection } from "@/components/legal/legal-document";
-import { businessConfig } from "@/config/business";
-import { fullAddress, siteConfig } from "@/config/site";
+import { fullAddress } from "@/lib/site";
+import type { SiteSettings } from "@/types/settings";
 import { buildMetadata } from "@/lib/seo";
+import { getSettings } from "@/server/settings";
 
-export const metadata = buildMetadata({
-  title: "Termos de Uso",
-  description: `Regras de uso do site e do agendamento online da ${siteConfig.shortName}: cancelamentos, atrasos, no-show, preços e responsabilidades.`,
-  path: "/termos",
-});
+export async function generateMetadata() {
+  const s = await getSettings();
+  return buildMetadata(s, {
+    title: "Termos de Uso",
+    description: `Regras de uso do site e do agendamento online da ${s.brand.shortName}: cancelamentos, atrasos, no-show, preços e responsabilidades.`,
+    path: "/termos",
+  });
+}
 
-const { legal, contact } = siteConfig;
-const { cancellation, lateToleranceMinutes, booking } = businessConfig;
-
-const sections: LegalSection[] = [
+function getSections(s: SiteSettings): LegalSection[] {
+  const { legal, contact, booking } = s;
+  return [
   {
     id: "identificacao",
     title: "Identificação do site",
     content: (
       <p>
-        Este site é operado por <strong>{legal.companyName}</strong>, inscrita no CNPJ sob o nº {legal.cnpj}, com sede em {fullAddress}{" "}
-        (“{siteConfig.shortName}”, “nós”). Contato: {contact.email} · {contact.phoneDisplay}.
+        Este site é operado por <strong>{legal.companyName}</strong>, inscrita no CNPJ sob o nº {legal.cnpj}, com sede em {fullAddress(s)}{" "}
+        (“{s.brand.shortName}”, “nós”). Contato: {contact.email} · {contact.phoneDisplay}.
       </p>
     ),
   },
@@ -80,13 +83,13 @@ const sections: LegalSection[] = [
         <ul>
           <li>
             <strong>Cancelamento:</strong> pode ser feito online em <Link href="/minha-reserva">Minha reserva</Link> até{" "}
-            {cancellation.minHoursBefore} horas antes do horário. Depois disso, fale conosco pelo WhatsApp.
+            {booking.cancelMinHours} horas antes do horário. Depois disso, fale conosco pelo WhatsApp.
           </li>
           <li>
             <strong>Reagendamento:</strong> pode ser solicitado online; o novo horário só vale após nossa confirmação.
           </li>
           <li>
-            <strong>Atrasos:</strong> toleramos até {lateToleranceMinutes} minutos. Após esse prazo, o horário pode ser liberado e o
+            <strong>Atrasos:</strong> toleramos até {booking.lateToleranceMinutes} minutos. Após esse prazo, o horário pode ser liberado e o
             atendimento fica sujeito a reencaixe, podendo ter o serviço reduzido para não prejudicar os próximos clientes.
           </li>
           <li>
@@ -165,13 +168,16 @@ const sections: LegalSection[] = [
     ),
   },
 ];
+}
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const s = await getSettings();
   return (
     <LegalDocument
       title="Termos de Uso"
-      intro={`Regras para usar o site e o agendamento online da ${siteConfig.name}.`}
-      sections={sections}
+      intro={`Regras para usar o site e o agendamento online da ${s.brand.name}.`}
+      lastUpdated={s.legal.lastUpdated}
+      sections={getSections(s)}
     />
   );
 }

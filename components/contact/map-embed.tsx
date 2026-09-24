@@ -3,12 +3,9 @@
 import { useState } from "react";
 import { ExternalLink, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { siteConfig } from "@/config/site";
+import { useSettings } from "@/components/providers/settings-provider";
 import { cn } from "@/lib/utils";
 
-const { lat, lng } = siteConfig.address.geo;
-export const mapsDirectionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-const embedUrl = `https://www.google.com/maps?q=${lat},${lng}&z=16&hl=pt-BR&output=embed`;
 
 /**
  * Mapa com "fachada": só carrega o Google Maps quando o visitante pede.
@@ -16,13 +13,17 @@ const embedUrl = `https://www.google.com/maps?q=${lat},${lng}&z=16&hl=pt-BR&outp
  */
 export function MapEmbed({ className }: { className?: string }) {
   const [loaded, setLoaded] = useState(false);
+  const settings = useSettings();
+  const { lat, lng } = settings.address;
+  const mapsDirectionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  const embedUrl = `https://www.google.com/maps?q=${lat},${lng}&z=16&hl=pt-BR&output=embed`;
 
   return (
     <div className={cn("relative overflow-hidden rounded-xl border bg-muted", className)}>
       {loaded ? (
         <iframe
           src={embedUrl}
-          title={`Mapa: localização da ${siteConfig.name}`}
+          title={`Mapa: localização da ${settings.brand.name}`}
           className="absolute inset-0 h-full w-full border-0"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
@@ -51,7 +52,7 @@ export function MapEmbed({ className }: { className?: string }) {
               <MapPin className="size-7" aria-hidden />
             </span>
             <p className="max-w-xs text-sm text-muted-foreground">
-              {siteConfig.address.street} — {siteConfig.address.neighborhood}, {siteConfig.address.city}
+              {settings.address.street} — {settings.address.neighborhood}, {settings.address.city}
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               <Button size="sm" onClick={() => setLoaded(true)}>

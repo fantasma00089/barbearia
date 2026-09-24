@@ -21,3 +21,8 @@ export function rateLimit(key: string, limit: number, windowMs: number) {
     for (const [k, v] of buckets) if (!v.some((t) => now - t < windowMs)) buckets.delete(k);
   }
 }
+
+/** Zera o contador (ex.: após login bem-sucedido, só erros contam). */
+export function rateLimitReset(key: string) {
+  buckets.delete(key);
+}
