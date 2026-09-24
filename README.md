@@ -68,19 +68,28 @@ A barbearia "Navalha & Arte" (Porto Velho — RO) é **fictícia**: todo o conte
 Pré-requisitos: **Node.js 20+** e npm.
 
 ```bash
-# 1. Dependências
 npm install
-
-# 2. Variáveis de ambiente
-cp .env.example .env
-#    edite ADMIN_PASSWORD e ADMIN_SESSION_SECRET (openssl rand -base64 48)
-
-# 3. Banco: cria o SQLite, aplica as migrations e popula com o seed
-npm run db:setup
-
-# 4. Desenvolvimento
+npm run setup        # cria o .env, gera o Prisma Client, aplica migrations e popula o banco
 npm run dev          # http://localhost:3000
 ```
+
+`npm run setup` funciona igual no Windows (cmd/PowerShell), macOS e Linux. Depois edite `ADMIN_PASSWORD` e
+`ADMIN_SESSION_SECRET` no `.env` (`openssl rand -base64 48`).
+
+<details>
+<summary>Passo a passo manual</summary>
+
+```bash
+cp .env.example .env         # Windows (cmd): copy .env.example .env
+npx prisma generate
+npm run db:setup
+npm run dev
+```
+</details>
+
+> **npm avisou `allow-scripts` / "@prisma/client did not initialize yet"?** Versões recentes do npm bloqueiam scripts
+> de instalação das dependências. O projeto contorna isso rodando `prisma generate` no `setup`, no `dev` e no `build`.
+> Se quiser liberar os scripts de vez: `npm approve-scripts --allow-scripts-pending`.
 
 Produção local:
 
@@ -277,6 +286,7 @@ Veja [server/payments/README.md](./server/payments/README.md).
 
 | Script | Descrição |
 | --- | --- |
+| `npm run setup` | Configuração inicial (.env, Prisma Client, migrations e seed) |
 | `npm run dev` | Servidor de desenvolvimento |
 | `npm run build` / `npm start` | Build e servidor de produção |
 | `npm run lint` | ESLint |
