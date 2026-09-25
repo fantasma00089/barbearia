@@ -62,7 +62,7 @@ export default async function ServicesPage() {
           <Info className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
           <span>
             Serviços de química com “a partir de” variam conforme comprimento e volume do cabelo. Pagamento na barbearia (Pix,
-            cartão ou dinheiro). Dúvidas? <Link href="/contato" className="text-primary underline-offset-4 hover:underline">Fale com a gente</Link>.
+            cartão ou dinheiro). Dúvidas? <Link href="/contato" className="text-primary underline underline-offset-4">Fale com a gente</Link>.
           </span>
         </p>
       </section>

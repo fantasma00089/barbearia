@@ -36,6 +36,7 @@ export async function createBlock(input: z.output<typeof timeBlockSchema>, now =
   }
   const startAt = zonedToUtc(input.date, input.startTime);
   const endAt = zonedToUtc(input.date, input.endTime);
+  if (endAt <= now) throw new AppError("POLICY", "Esse período já passou. Escolha um horário futuro.");
   const block = await prisma.timeBlock.create({
     data: { barberId: input.barberId, startAt, endAt, reason: input.reason || null },
   });

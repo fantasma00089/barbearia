@@ -49,6 +49,13 @@ export function clientIp(req: Request) {
   return fwd?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 }
 
+/** Tamanho máximo aceito em corpos JSON (evita abuso de memória). */
+const MAX_JSON_BYTES = 64 * 1024;
+
 export async function readJson(req: Request): Promise<unknown> {
-  return req.json();
+  const declared = Number(req.headers.get("content-length") ?? 0);
+  if (declared > MAX_JSON_BYTES) throw new AppError("VALIDATION", "Requisição grande demais.");
+  const text = await req.text();
+  if (text.length > MAX_JSON_BYTES) throw new AppError("VALIDATION", "Requisição grande demais.");
+  return JSON.parse(text);
 }

@@ -13,8 +13,9 @@ export const adminBookingActionSchema = z.object({
   reason: z.string().trim().max(200).optional(),
 });
 
+/** Período da agenda: "proximas" (hoje em diante), "todas" ou um dia "YYYY-MM-DD". */
 export const adminBookingsQuerySchema = z.object({
-  date: dateStrSchema.optional(),
+  date: z.union([z.literal("proximas"), z.literal("todas"), dateStrSchema]).default("proximas"),
   status: z.enum(["ALL", "ACTIVE", "PENDING", "CONFIRMED", "CANCELLED", "COMPLETED", "NO_SHOW", "RESCHEDULE"]).default("ACTIVE"),
   barberId: idSchema.optional(),
 });

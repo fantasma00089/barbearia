@@ -15,7 +15,12 @@ export function NotFoundView() {
       <m.div variants={staggerContainer(0.08)} initial="hidden" animate="show" className="flex flex-col items-center">
         {/* Tesoura que "corta" o 404 — um único movimento curto */}
         <m.div variants={item} className="relative" aria-hidden>
-          <p className="font-display text-[8rem] font-semibold leading-none text-muted-foreground/20 sm:text-[11rem]">404</p>
+          {/* Número decorativo em SVG (o texto real está no título abaixo) */}
+          <svg viewBox="0 0 300 130" className="h-32 w-auto sm:h-44" role="presentation">
+            <text x="150" y="112" textAnchor="middle" fontFamily="var(--font-display)" fontWeight="600" fontSize="140" fill="hsl(var(--muted-foreground) / 0.2)">
+              404
+            </text>
+          </svg>
           <m.svg
             viewBox="0 0 64 32"
             className="absolute left-1/2 top-1/2 w-24 -translate-y-1/2 text-primary sm:w-32"

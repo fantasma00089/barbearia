@@ -20,9 +20,26 @@ function fromB64url(s: string) {
   return Uint8Array.from(bin, (c) => c.charCodeAt(0));
 }
 
+/** Valores de exemplo do .env.example — nunca aceitos em produção. */
+export const EXAMPLE_SESSION_SECRET = "troque-por-um-segredo-longo-e-aleatorio-com-32+-caracteres";
+export const EXAMPLE_ADMIN_PASSWORD = "troque-esta-senha";
+
+const isProduction = () => process.env.NODE_ENV === "production";
+
 export function getSessionSecret() {
   const secret = process.env.ADMIN_SESSION_SECRET ?? "";
-  return secret.length >= 32 ? secret : null;
+  if (secret.length < 32) return null;
+  // Segredo público (do exemplo) permitiria forjar sessões: bloqueado em produção.
+  if (isProduction() && secret === EXAMPLE_SESSION_SECRET) return null;
+  return secret;
+}
+
+/** Senha do .env válida? (em produção, a senha de exemplo não vale) */
+export function getEnvAdminPassword() {
+  const pwd = process.env.ADMIN_PASSWORD ?? "";
+  if (pwd.length < 8) return null;
+  if (isProduction() && pwd === EXAMPLE_ADMIN_PASSWORD) return null;
+  return pwd;
 }
 
 async function hmacKey(secret: string) {

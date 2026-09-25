@@ -226,6 +226,8 @@ export function ImageUpload({
             id={id}
             type="file"
             accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+            aria-label={label}
+            tabIndex={-1}
             className="sr-only"
             onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
           />

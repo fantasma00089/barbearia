@@ -230,6 +230,24 @@ export async function move(model: "barber" | "service", id: string, direction: "
 
 /* ───────────────────────── Imagens ───────────────────────── */
 
+function matchesSignature(b: Uint8Array, type: string) {
+  const ascii = (from: number, to: number) => String.fromCharCode(...b.slice(from, to));
+  switch (type) {
+    case "image/jpeg":
+      return b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
+    case "image/png":
+      return b[0] === 0x89 && ascii(1, 4) === "PNG";
+    case "image/gif":
+      return ascii(0, 4) === "GIF8";
+    case "image/webp":
+      return ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP";
+    case "image/avif":
+      return ascii(4, 8) === "ftyp" && /avi[fs]/.test(ascii(8, 12));
+    default:
+      return false;
+  }
+}
+
 export const MEDIA_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
 export const MEDIA_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -237,6 +255,8 @@ export async function saveMedia(file: File) {
   if (!MEDIA_TYPES.includes(file.type)) throw new AppError("VALIDATION", "Use uma imagem JPG, PNG, WebP, AVIF ou GIF.");
   if (file.size > MEDIA_MAX_BYTES) throw new AppError("VALIDATION", "A imagem deve ter no máximo 4 MB.");
   const bytes = new Uint8Array(await file.arrayBuffer());
+  // Confere a assinatura real do arquivo (não confia só no tipo declarado pelo navegador).
+  if (!matchesSignature(bytes, file.type)) throw new AppError("VALIDATION", "O arquivo não é uma imagem válida.");
   const media = await prisma.media.create({ data: { mimeType: file.type, size: file.size, data: bytes } });
   return { id: media.id, url: `/media/${media.id}` };
 }

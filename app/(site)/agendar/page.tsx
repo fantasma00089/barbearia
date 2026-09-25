@@ -25,7 +25,8 @@ export default async function BookingPage({ searchParams }: { searchParams: Sear
   const [services, barbers, hours, settings] = await Promise.all([getServices(), getBarbers(), getBusinessHours(), getSettings()]);
 
   // Pré-seleção via URL: /agendar?servico=fade-degrade&barbeiro=rafael-moreira
-  const service = services.find((s) => s.slug === params.servico) ?? null;
+  // Serviço sem barbeiro ativo não pode ser pré-selecionado.
+  const service = services.find((s) => s.slug === params.servico && s.barberIds.length > 0) ?? null;
   let barberId: string | null =
     params.barbeiro === "sem-preferencia" ? ANY_BARBER : (barbers.find((b) => b.slug === params.barbeiro)?.id ?? null);
   if (service && barberId && barberId !== ANY_BARBER && !service.barberIds.includes(barberId)) barberId = null;

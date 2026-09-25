@@ -22,7 +22,11 @@ export function formatPhone(digits: string) {
 
 /** Máscara progressiva enquanto o usuário digita. */
 export function maskPhone(value: string) {
-  const d = value.replace(/\D/g, "").slice(0, 11);
+  let d = value.replace(/\D/g, "");
+  // Colou com DDI (+55 69 9…) ou com zero do DDD (069 9…)? Remove antes de mascarar.
+  if (d.length > 11 && d.startsWith("55")) d = d.slice(2);
+  if (d.length > 11 && d.startsWith("0")) d = d.slice(1);
+  d = d.slice(0, 11);
   if (d.length <= 2) return d.length ? `(${d}` : "";
   if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
   if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;

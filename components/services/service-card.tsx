@@ -30,6 +30,9 @@ export function ServiceCard({ service }: { service: ServiceDTO }) {
             {formatDuration(service.durationMin)}
           </p>
         </div>
+        {service.barberIds.length === 0 ? (
+          <span className="text-xs text-muted-foreground">Agendamento pelo WhatsApp</span>
+        ) : (
         <Link
           href={`/agendar?servico=${service.slug}`}
           className="inline-flex items-center gap-1.5 rounded-full py-2 text-sm font-semibold text-foreground transition-colors hover:text-primary"
@@ -38,6 +41,7 @@ export function ServiceCard({ service }: { service: ServiceDTO }) {
           <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden />
           <span className="sr-only">: {service.name}</span>
         </Link>
+        )}
       </div>
     </article>
   );

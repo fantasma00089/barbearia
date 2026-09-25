@@ -86,7 +86,7 @@ npm run dev          # http://localhost:3000
 <summary>Passo a passo manual</summary>
 
 ```bash
-cp .env.example .env         # Windows (cmd): copy .env.example .env
+cp .env.example .env         # Windows (cmd): copy .env.example .env  (troque o ADMIN_SESSION_SECRET!)
 npx prisma generate
 npm run db:setup
 npm run dev
@@ -131,10 +131,21 @@ O seed (`prisma/seed.ts`) cria:
 
 **Esqueceu a senha?** Rode `npm run admin:reset-password` no servidor: volta a valer a `ADMIN_PASSWORD` do `.env`.
 
-Segurança: cookie `httpOnly` assinado com HMAC-SHA256 (8 h), senha comparada em tempo constante, bloqueio após
-5 senhas erradas em 15 min por IP, `middleware.ts` protegendo `/admin` e `/api/admin`, e checagem de sessão repetida em
-cada rota. Imagens enviadas ficam no banco (tabela `Media`, até 4 MB, JPG/PNG/WebP/AVIF/GIF) e são servidas em `/media/:id`
-— funciona igual em VPS e em hospedagem serverless.
+### Segurança
+
+| Proteção | Como funciona |
+| --- | --- |
+| Sessão | Cookie `httpOnly`, `SameSite=Lax`, `Secure` em produção, assinado com HMAC-SHA256, validade de 8 h |
+| Valores de exemplo | Em produção, a senha e o segredo do `.env.example` são **recusados** (o painel fica bloqueado até trocá-los). `npm run setup` já gera um segredo aleatório |
+| Senha | Guardada com scrypt ao trocar pelo painel; comparação em tempo constante; trocar a senha encerra as outras sessões |
+| Força bruta | 5 senhas erradas por IP e 30 no total a cada 15 min (o teto global barra ataques que trocam de IP; durante um ataque o login fica pausado por alguns minutos) |
+| Acesso | `middleware.ts` protege `/admin` e `/api/admin`, e cada rota confere a sessão de novo |
+| CSRF | Escritas em `/api/*` vindas de outro site são recusadas (checagem de `Origin`) |
+| Cabeçalhos | Content-Security-Policy, HSTS (produção), `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `COOP` |
+| Entradas | Tudo validado com Zod no servidor; corpos JSON limitados a 64 KB; textos exibidos sempre escapados pelo React |
+| Uploads | Só JPG/PNG/WebP/AVIF/GIF até 4 MB, com **conferência da assinatura real do arquivo**; servidos com `nosniff` e CSP própria |
+| Reservas | Consulta exige código **e** WhatsApp (mesma mensagem de erro para ambos); limites por IP; honeypot anti-robô; máximo de 3 reservas futuras por WhatsApp |
+| Dependências | `npm audit` sem vulnerabilidades |
 
 ### Seed e dados editados no painel
 
@@ -309,7 +320,7 @@ Veja [server/payments/README.md](./server/payments/README.md).
 | `npm run build` / `npm start` | Build e servidor de produção |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript sem emitir arquivos |
-| `npm test` | Testes unitários (Vitest) |
+| `npm test` | Testes unitários (Vitest): agenda, fuso, validações, sessão, configurações |
 | `npm run placeholders` | Regera as imagens ilustrativas SVG |
 | `npm run admin:reset-password` | Volta a senha do painel para a do `.env` |
 | `npm run db:*` | Veja [Banco de dados e seed](#banco-de-dados-e-seed) |

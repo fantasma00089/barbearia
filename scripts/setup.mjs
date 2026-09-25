@@ -5,7 +5,8 @@
  *  3. aplica as migrations e popula o banco.
  * Uso: npm run setup
  */
-import { copyFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import { execSync } from "node:child_process";
 
 const run = (cmd) => {
@@ -14,10 +15,19 @@ const run = (cmd) => {
 };
 
 if (!existsSync(".env")) {
-  copyFileSync(".env.example", ".env");
-  console.log("✓ .env criado a partir do .env.example (troque ADMIN_PASSWORD antes de publicar)");
+  // Gera um segredo de sessão exclusivo desta instalação.
+  const secret = randomBytes(48).toString("base64url");
+  const env = readFileSync(".env.example", "utf8").replace(
+    /^ADMIN_SESSION_SECRET=.*$/m,
+    `ADMIN_SESSION_SECRET="${secret}"`,
+  );
+  writeFileSync(".env", env);
+  console.log("✓ .env criado com segredo de sessão aleatório (troque ADMIN_PASSWORD antes de publicar)");
 } else {
-  console.log("✓ .env já existe — mantido");
+  const env = readFileSync(".env", "utf8");
+  if (env.includes("troque-por-um-segredo-longo")) {
+    console.log("⚠ .env usa o ADMIN_SESSION_SECRET de exemplo: em produção o painel fica bloqueado até você trocá-lo.");
+  } else console.log("✓ .env já existe — mantido");
 }
 
 run("npx prisma generate");

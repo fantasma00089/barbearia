@@ -104,22 +104,31 @@ export function BookingWizard({ services, barbers, hours, today, maxAdvanceDays,
   }, []);
 
   /* ── Seleções ── */
+  // Mudar uma escolha invalida o horário: as etapas seguintes precisam ser refeitas.
+  const invalidateFrom = (s: number) => setMaxReached((m) => Math.min(m, s));
+
   const selectService = (id: string) => {
+    if (id === serviceId) return;
     setServiceId(id);
     if (barberId && barberId !== ANY_BARBER && !barbers.find((b) => b.id === barberId)?.serviceIds.includes(id)) {
       setBarberId(null);
-    }
+      invalidateFrom(1);
+    } else invalidateFrom(3);
     setTime(null);
   };
   const selectBarber = (id: string) => {
+    if (id === barberId) return;
     setBarberId(id);
     setTime(null);
     setConflict(null);
+    invalidateFrom(3);
   };
   const selectDate = (d: string) => {
+    if (d === date) return;
     setDate(d);
     setTime(null);
     setConflict(null);
+    invalidateFrom(3);
   };
 
   /* ── Avançar ── */
@@ -136,6 +145,17 @@ export function BookingWizard({ services, barbers, hours, today, maxAdvanceDays,
   };
 
   const submit = async () => {
+    // Garantia extra: todas as escolhas precisam estar completas antes de enviar.
+    const missing = !serviceId ? 0 : !barberId ? 1 : !date ? 2 : !time ? 3 : null;
+    if (missing !== null) {
+      goTo(missing);
+      setStepError("Falta completar uma etapa antes de confirmar.");
+      return;
+    }
+    if (!validateCustomer()) {
+      goTo(4);
+      return;
+    }
     if (!accept) {
       setAcceptError("Para confirmar, aceite os Termos de Uso e a Política de Privacidade.");
       document.getElementById("accept")?.focus();

@@ -50,7 +50,14 @@ export function ServiceStep({
             </legend>
             <div className="grid gap-3 sm:grid-cols-2">
               {items.map((s) => (
-                <OptionCard key={s.id} name="service" value={s.id} checked={selectedId === s.id} onSelect={onSelect}>
+                <OptionCard
+                  key={s.id}
+                  name="service"
+                  value={s.id}
+                  checked={selectedId === s.id}
+                  onSelect={onSelect}
+                  disabled={s.barberIds.length === 0}
+                >
                   <div className="pr-8">
                     <p className="font-semibold">{s.name}</p>
                     <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{s.description}</p>
@@ -60,7 +67,11 @@ export function ServiceStep({
                       <Clock className="size-3.5" aria-hidden />
                       {formatDuration(s.durationMin)}
                     </span>
-                    <span className="font-semibold text-primary">{formatPrice(s.priceCents, s.priceFrom)}</span>
+                    {s.barberIds.length === 0 ? (
+                      <span className="text-xs text-muted-foreground">Indisponível no momento</span>
+                    ) : (
+                      <span className="font-semibold text-primary">{formatPrice(s.priceCents, s.priceFrom)}</span>
+                    )}
                   </div>
                 </OptionCard>
               ))}

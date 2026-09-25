@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Ban, Check, CheckCheck, ChevronLeft, ChevronRight, CalendarClock, StickyNote, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { useSettings } from "@/components/providers/settings-provider";
 import { apiFetch } from "@/lib/api-client";
 import { STATUS_LABELS } from "@/lib/constants";
 import { customerWhatsappLink, formatPhone, formatPrice } from "@/lib/format";
-import { addDays, formatDateStr, formatDateTime, toTimeStr } from "@/lib/time";
+import { addDays, formatDateStr, formatDateTime, toDateStr, toTimeStr } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { AdminBookingDTO, BookingStatus } from "@/types";
 
@@ -38,7 +38,8 @@ const STATUS_VARIANT: Record<BookingStatus, "success" | "warning" | "destructive
 interface Props {
   bookings: AdminBookingDTO[];
   barbers: { id: string; name: string }[];
-  filters: { date: string | null; status: string; barberId: string | null };
+  /** date: "proximas" | "todas" | "YYYY-MM-DD" */
+  filters: { date: string; status: string; barberId: string | null };
   today: string;
 }
 
@@ -50,13 +51,16 @@ export function BookingsBoard({ bookings, barbers, filters, today }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const isDay = /^\d{4}-\d{2}-\d{2}$/.test(filters.date);
+
   const setFilter = (patch: Partial<Props["filters"]>) => {
     const next = { ...filters, ...patch };
     const qs = new URLSearchParams();
-    qs.set("date", next.date ?? "all");
+    if (next.date !== "proximas") qs.set("date", next.date);
     if (next.status !== "ACTIVE") qs.set("status", next.status);
     if (next.barberId) qs.set("barberId", next.barberId);
-    startTransition(() => router.push(`${pathname}?${qs}`));
+    const query = qs.toString();
+    startTransition(() => router.push(query ? `${pathname}?${query}` : pathname));
   };
 
   const act = async (b: AdminBookingDTO, action: string) => {
@@ -79,44 +83,48 @@ export function BookingsBoard({ bookings, barbers, filters, today }: Props) {
   return (
     <div className="space-y-6">
       {/* Filtros */}
-      <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 lg:flex-row lg:items-end">
-        <div className="flex items-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label="Dia anterior"
-            onClick={() => setFilter({ date: addDays(filters.date ?? today, -1) })}
-          >
-            <ChevronLeft />
-          </Button>
-          <div className="space-y-1.5">
-            <label htmlFor="f-date" className="text-xs font-medium text-muted-foreground">
-              Data
-            </label>
-            <Input
-              id="f-date"
-              type="date"
-              value={filters.date ?? ""}
-              onChange={(e) => setFilter({ date: e.target.value || null })}
-              className="h-10 w-44"
-            />
+      <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="flex flex-wrap items-end gap-3">
+          <div role="group" aria-label="Período" className="flex rounded-lg border p-1">
+            {[
+              { value: "proximas", label: "Próximas" },
+              { value: today, label: "Hoje" },
+              { value: "todas", label: "Todas" },
+            ].map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                aria-pressed={filters.date === p.value}
+                onClick={() => setFilter({ date: p.value })}
+                className={cn(
+                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                  filters.date === p.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label="Próximo dia"
-            onClick={() => setFilter({ date: addDays(filters.date ?? today, 1) })}
-          >
-            <ChevronRight />
-          </Button>
-          <Button type="button" variant="ghost" size="sm" onClick={() => setFilter({ date: today })}>
-            Hoje
-          </Button>
-          <Button type="button" variant="ghost" size="sm" onClick={() => setFilter({ date: null })}>
-            Todas as datas
-          </Button>
+          <div className="flex items-end gap-2">
+            <Button type="button" variant="outline" size="icon" aria-label="Dia anterior" onClick={() => setFilter({ date: addDays(isDay ? filters.date : today, -1) })}>
+              <ChevronLeft />
+            </Button>
+            <div className="space-y-1.5">
+              <label htmlFor="f-date" className="text-xs font-medium text-muted-foreground">
+                Dia específico
+              </label>
+              <Input
+                id="f-date"
+                type="date"
+                value={isDay ? filters.date : ""}
+                onChange={(e) => e.target.value && setFilter({ date: e.target.value })}
+                className="h-10 w-44"
+              />
+            </div>
+            <Button type="button" variant="outline" size="icon" aria-label="Próximo dia" onClick={() => setFilter({ date: addDays(isDay ? filters.date : today, 1) })}>
+              <ChevronRight />
+            </Button>
+          </div>
         </div>
         <div className="space-y-1.5">
           <label htmlFor="f-barber" className="text-xs font-medium text-muted-foreground">
@@ -126,7 +134,7 @@ export function BookingsBoard({ bookings, barbers, filters, today }: Props) {
             id="f-barber"
             value={filters.barberId ?? ""}
             onChange={(e) => setFilter({ barberId: e.target.value || null })}
-            className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm lg:w-48"
+            className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm xl:w-48"
           >
             <option value="">Todos</option>
             {barbers.map((b) => (
@@ -159,22 +167,28 @@ export function BookingsBoard({ bookings, barbers, filters, today }: Props) {
 
       <div className={cn("space-y-3 transition-opacity", pending && "opacity-60")} aria-busy={pending}>
         <p className="text-sm text-muted-foreground" aria-live="polite">
-          {bookings.length} reserva(s){filters.date ? ` em ${formatDateStr(filters.date)}` : ""}.
+          {bookings.length} reserva(s)
+          {isDay ? ` em ${formatDateStr(filters.date)}` : filters.date === "proximas" ? " de hoje em diante" : " (mais recentes primeiro)"}.
         </p>
 
         {bookings.length === 0 && (
           <div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">Nenhuma reserva encontrada com esses filtros.</div>
         )}
 
-        {bookings.map((b) => (
-          <article key={b.id} className="rounded-xl border bg-card p-4 sm:p-5">
+        {bookings.map((b, i) => (
+          <Fragment key={b.id}>
+            {/* Cabeçalho de dia quando a lista cobre vários dias */}
+            {!isDay && (i === 0 || toDateStr(new Date(bookings[i - 1]!.startAt)) !== toDateStr(new Date(b.startAt))) && (
+              <h2 className="pt-4 font-sans text-xs font-semibold uppercase tracking-widest text-primary first:pt-0">{b.dateLabel}</h2>
+            )}
+          <article className="rounded-xl border bg-card p-4 sm:p-5">
             <div className="flex flex-col gap-4 md:flex-row md:items-start">
               <div className="w-28 shrink-0">
                 <p className="font-display text-2xl font-semibold tabular-nums">
                   {b.timeLabel}
                   <span className="text-base text-muted-foreground">–{toTimeStr(new Date(b.endAt))}</span>
                 </p>
-                {!filters.date && <p className="text-xs capitalize text-muted-foreground">{b.dateLabel}</p>}
+                {!isDay && <p className="text-xs capitalize text-muted-foreground">{formatDateStr(toDateStr(new Date(b.startAt)), { day: "2-digit", month: "2-digit" })}</p>}
               </div>
 
               <div className="min-w-0 flex-1 space-y-1">
@@ -214,7 +228,7 @@ export function BookingsBoard({ bookings, barbers, filters, today }: Props) {
                     {b.cancelReason ? ` — “${b.cancelReason}”` : ""}
                   </p>
                 )}
-                <p className="text-[11px] text-muted-foreground/70">Criada em {formatDateTime(new Date(b.createdAt))}</p>
+                <p className="text-[11px] text-muted-foreground">Criada em {formatDateTime(new Date(b.createdAt))}</p>
               </div>
 
               <div className="flex flex-wrap gap-2 md:max-w-[280px] md:justify-end">
@@ -259,6 +273,7 @@ export function BookingsBoard({ bookings, barbers, filters, today }: Props) {
               </div>
             </div>
           </article>
+          </Fragment>
         ))}
       </div>
     </div>

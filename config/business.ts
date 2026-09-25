@@ -35,6 +35,8 @@ export const businessConfig = {
     autoConfirm: false,
     /** Prefixo do código da reserva (ex.: NA-7K3F9Q). */
     codePrefix: "NA",
+    /** Máximo de reservas futuras ativas por WhatsApp (anti-abuso). */
+    maxActivePerPhone: 3,
   },
 
   cancellation: {

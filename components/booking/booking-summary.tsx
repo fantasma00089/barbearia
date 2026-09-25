@@ -47,15 +47,15 @@ export function BookingSummary({
   ];
 
   return (
-    <dl className={cn("divide-y", className)}>
+    <ul className={cn("divide-y", className)}>
       {rows.map(({ step, icon: Icon, label, value }) => (
-        <div key={label} className="flex items-start gap-3 py-3">
+        <li key={label} className="flex items-start gap-3 py-3">
           <Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
           <div className="min-w-0 flex-1">
-            <dt className="text-xs text-muted-foreground">{label}</dt>
-            <dd className={cn("text-sm font-medium first-letter:uppercase", !value && "text-muted-foreground/60")}>
+            <span className="block text-xs text-muted-foreground">{label}</span>
+            <span className={cn("block text-sm font-medium first-letter:uppercase", !value && "text-muted-foreground/60")}>
               {value ?? "—"}
-            </dd>
+            </span>
           </div>
           {onEdit && step >= 0 && value && (
             <button
@@ -66,8 +66,8 @@ export function BookingSummary({
               Alterar<span className="sr-only"> {label.toLowerCase()}</span>
             </button>
           )}
-        </div>
+        </li>
       ))}
-    </dl>
+    </ul>
   );
 }

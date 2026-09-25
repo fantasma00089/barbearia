@@ -2,7 +2,7 @@ import "server-only";
 import { createHash, randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { cookies } from "next/headers";
-import { ADMIN_COOKIE, getSessionSecret, readSessionVersion, verifySession } from "@/lib/auth-token";
+import { ADMIN_COOKIE, getEnvAdminPassword, getSessionSecret, readSessionVersion, verifySession } from "@/lib/auth-token";
 import { prisma } from "../db";
 import { AppError } from "../errors";
 
@@ -31,7 +31,7 @@ async function getSecurity(): Promise<SecurityData> {
 export async function isAdminConfigured() {
   if (!getSessionSecret()) return false;
   const sec = await getSecurity();
-  return Boolean(sec.hash || (process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.length >= 8));
+  return Boolean(sec.hash || getEnvAdminPassword());
 }
 
 export async function checkAdminPassword(input: string) {
@@ -40,7 +40,7 @@ export async function checkAdminPassword(input: string) {
     const derived = await scrypt(input, Buffer.from(sec.salt, "hex"), 64);
     return timingSafeEqual(derived, Buffer.from(sec.hash, "hex"));
   }
-  const expected = process.env.ADMIN_PASSWORD ?? "";
+  const expected = getEnvAdminPassword();
   if (!expected) return false;
   const a = createHash("sha256").update(input).digest();
   const b = createHash("sha256").update(expected).digest();

@@ -164,7 +164,7 @@ export function ReservationManager({ today }: { today: string }) {
                 </div>
               </header>
 
-              <dl className="grid gap-5 p-6 sm:grid-cols-2">
+              <ul className="grid gap-5 p-6 sm:grid-cols-2">
                 {[
                   { icon: Scissors, label: "Serviço", value: `${booking.serviceName} · ${formatDuration(booking.durationMin)}` },
                   { icon: User, label: "Barbeiro", value: booking.barberName },
@@ -173,15 +173,15 @@ export function ReservationManager({ today }: { today: string }) {
                   { icon: Wallet, label: "Valor", value: `${formatPrice(booking.priceCents, booking.priceFrom)} (na barbearia)` },
                   { icon: User, label: "Cliente", value: booking.customerName },
                 ].map(({ icon: Icon, label, value }) => (
-                  <div key={label} className="flex gap-3">
+                  <li key={label} className="flex gap-3">
                     <Icon className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
                     <div>
-                      <dt className="text-xs text-muted-foreground">{label}</dt>
-                      <dd className="font-medium first-letter:uppercase">{value}</dd>
+                      <span className="block text-xs text-muted-foreground">{label}</span>
+                      <span className="block font-medium first-letter:uppercase">{value}</span>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </dl>
+              </ul>
 
               <footer className="space-y-4 border-t p-6">
                 {booking.status === "CANCELLED" || booking.status === "COMPLETED" || booking.status === "NO_SHOW" ? (

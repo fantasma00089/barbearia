@@ -121,6 +121,16 @@ export async function createBooking(input: CreateInput, now = new Date()) {
               );
             }
 
+            const activeForPhone = await tx.booking.count({
+              where: { customerPhone: input.phone, status: { in: ACTIVE_BOOKING_STATUSES }, startAt: { gte: now } },
+            });
+            if (activeForPhone >= businessConfig.booking.maxActivePerPhone) {
+              throw new AppError(
+                "POLICY",
+                `Este WhatsApp já tem ${activeForPhone} reservas ativas. Para agendar mais, cancele uma em “Minha reserva” ou fale com a gente.`,
+              );
+            }
+
             const chosenBarberId = barberId ?? (await pickLeastBusyBarber(tx, slot.barberIds, startAt));
             const service = await tx.service.findUniqueOrThrow({ where: { id: input.serviceId } });
 
@@ -235,13 +245,19 @@ export async function requestReschedule(input: z.output<typeof rescheduleRequest
 
 /* ───────────────────────── Admin ───────────────────────── */
 
-export async function listBookingsForAdmin(filter: {
-  date?: string;
-  status: string;
-  barberId?: string;
-}) {
+export async function listBookingsForAdmin(
+  filter: {
+    /** "proximas" = de hoje em diante · "todas" = inclui passadas · "YYYY-MM-DD" = um dia */
+    date: string;
+    status: string;
+    barberId?: string;
+  },
+  now = new Date(),
+) {
   const where: Prisma.BookingWhereInput = {};
-  if (filter.date) {
+  if (filter.date === "proximas") {
+    where.startAt = { gte: zonedToUtc(todayStr(now), "00:00") };
+  } else if (filter.date !== "todas") {
     where.startAt = { gte: zonedToUtc(filter.date, "00:00"), lt: zonedToUtc(addDays(filter.date, 1), "00:00") };
   }
   if (filter.barberId) where.barberId = filter.barberId;
@@ -254,7 +270,8 @@ export async function listBookingsForAdmin(filter: {
   const rows = await prisma.booking.findMany({
     where,
     include: withRelations,
-    orderBy: { startAt: "asc" },
+    // "Todas": mais recentes primeiro; demais: ordem cronológica.
+    orderBy: { startAt: filter.date === "todas" ? "desc" : "asc" },
     take: 300,
   });
   const { booking: rules } = await getSettings();
@@ -297,9 +314,9 @@ export async function getAdminStats(now = new Date()) {
   const end = zonedToUtc(addDays(day, 1), "00:00");
   const [today, pending, reschedule, upcoming] = await Promise.all([
     prisma.booking.count({ where: { startAt: { gte: start, lt: end }, status: { in: ACTIVE_BOOKING_STATUSES } } }),
-    prisma.booking.count({ where: { status: "PENDING", startAt: { gte: now } } }),
+    prisma.booking.count({ where: { status: "PENDING", startAt: { gte: start } } }),
     prisma.booking.count({ where: { rescheduleRequested: true, status: { in: ACTIVE_BOOKING_STATUSES } } }),
-    prisma.booking.count({ where: { startAt: { gte: now }, status: { in: ACTIVE_BOOKING_STATUSES } } }),
+    prisma.booking.count({ where: { startAt: { gte: start }, status: { in: ACTIVE_BOOKING_STATUSES } } }),
   ]);
   return { today, pending, reschedule, upcoming };
 }

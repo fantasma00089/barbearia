@@ -57,8 +57,9 @@
     --muted-foreground: 30 8% 64%;
     --accent: 0 0% 14%;
     --accent-foreground: 40 20% 94%;
-    --destructive: 6 66% 52%;
-    --destructive-foreground: 0 0% 100%;
+    /* Vermelho claro o bastante para texto sobre fundo escuro; texto escuro sobre ele (contraste AA) */
+    --destructive: 6 78% 62%;
+    --destructive-foreground: 0 0% 6%;
     --border: 0 0% 16%;
     --input: 0 0% 20%;
     --ring: 38 74% 56%;
